@@ -1,0 +1,72 @@
+TOSGuard seed → 0x47f5483B6F8F187AE667C55C967d35f802Ba4A02  (2026-09-23T15:40:56.010Z)
+
+https://twitter.com/en/tos  DATA_SALE   expected: RED_FLAG (brief)
+  check_tos by consumer1: ACCEPTED tx 0x6e4dcfdd1093e063953f36f2fa811b832dc6c7fd051cb0fcfe1c4c182c6a200d → {"check_id":1,"flag_type":"DATA_SALE","next":"judge_check(1)","status":"OK","url":"https://twitter.com/en/tos"}
+
+https://www.reddit.com/policies/user-agreement  CONTENT_OWNERSHIP   expected: RED_FLAG (brief); INCONCLUSIVE if Reddit refuses the render, as it did the probe
+  check_tos by consumer2: ACCEPTED tx 0x9c3d6cfecbe9883cb0a2f94031c50549a849b609f064a8ccce4f0fdd6ffd0d8b → {"check_id":2,"flag_type":"CONTENT_OWNERSHIP","next":"judge_check(2)","status":"OK","url":"https://www.reddit.com/policies/user-agreement"}
+
+https://duckduckgo.com/terms  DATA_SALE   expected: CLEAN (brief)
+  check_tos by consumer3: ACCEPTED tx 0x9751440b59fe182170fdbc5badefc9c785ac6a52ecbacbda22abe268c84f9e9a → {"check_id":3,"flag_type":"DATA_SALE","next":"judge_check(3)","status":"OK","url":"https://duckduckgo.com/terms"}
+
+https://www.wikipedia.org/wiki/Terms_of_Use  ACCOUNT_TERMINATION   expected: RED_FLAG or CLEAN (brief)
+  check_tos by consumer4: ACCEPTED tx 0x6e0ea9467fd23347dbfcb01db4dd596bdbe2172c559316d99126f058d8ff7a3c → {"check_id":4,"flag_type":"ACCOUNT_TERMINATION","next":"judge_check(4)","status":"OK","url":"https://www.wikipedia.org/wiki/Terms_of_Use"}
+
+https://example.com/  DATA_SALE   expected: INCONCLUSIVE (not a TOS)
+  check_tos by consumer5: ACCEPTED tx 0xee501bbf7de3fa78c3ad397abc84b09b931a16259c236b08211edad25c544932 → {"check_id":5,"flag_type":"DATA_SALE","next":"judge_check(5)","status":"OK","url":"https://example.com/"}
+
+batch https://twitter.com/en/tos CONTENT_OWNERSHIP,MANDATORY_ARBITRATION
+  batch_check by consumer6: ACCEPTED tx 0x6f8b7d08ddee6927e8fd8a61a2146d11cb426b4159aa42da78192b5c34e8186e → null
+
+judging #1
+  judge_check(1) try 1: ACCEPTED 59s tx 0x159addda33b54e24a99c1c62a605f1440b420ce8c67faaca98b9158907721f86 → {"case":"MENTIONED","check_id":1,"clarity_bucket":4,"content_hash":"3f705e887417f1ad","evidence_present":true,"findings_key":"CLEAN|sev0|clr4|scp0|ev1|len7|3f705e887417f1ad","judged":true,"outcome":"CLEAN","scope_bucket":0,"severity_bucket":0,"status":"OK"}
+  #1 https://twitter.com/en/tos DATA_SALE: JUDGED CLEAN  sev 0 clr 4 scp 0 ev true len 7 case MENTIONED
+  quote: "we do not disclose personally-identifying information to third parties except in accordance with our privacy policy."
+  reason: 34 clauses address the topic, none in the explicit wording the scan looks for. Finding: CLEAN for Data sale or sharing.
+
+judging #2
+  judge_check(2) try 1: ACCEPTED 8s tx 0x96a056dea26201cfa89b4728cc42a5cf3c54a30f90ac39b01ea1b24035f70d1a → {"case":"UNREADABLE","check_id":2,"clarity_bucket":0,"content_hash":"2d78d324a007e35a","evidence_present":false,"findings_key":"INCONCLUSIVE|sev0|clr0|scp0|ev0|len0|2d78d324a007e35a","judged":true,"outcome":"INCONCLUSIVE","scope_bucket":0,"severity_bucket":0,"status":"OK"}
+  #2 https://www.reddit.com/policies/user-agreement CONTENT_OWNERSHIP: JUDGED INCONCLUSIVE  sev 0 clr 0 scp 0 ev false len 0 case UNREADABLE
+  reason: The page could not be rendered or was too short to be a terms document (for example a login wall or an error page). Finding: INCONCLUSIVE.
+
+judging #3
+  judge_check(3) try 1: ACCEPTED 28s tx 0xab34ea73e095d9ca042e089d73c6d5cb09ff4b3d96a3d260d36cae54eca9eae8 → {"case":"MENTIONED","check_id":3,"clarity_bucket":2,"content_hash":"12c08488aac7be35","evidence_present":true,"findings_key":"INCONCLUSIVE|sev0|clr2|scp0|ev1|len3|12c08488aac7be35","judged":true,"outcome":"INCONCLUSIVE","scope_bucket":0,"severity_bucket":0,"status":"OK"}
+  #3 https://duckduckgo.com/terms DATA_SALE: JUDGED INCONCLUSIVE  sev 0 clr 2 scp 0 ev true len 3 case MENTIONED
+  reason: 7 clauses address the topic, none in the explicit wording the scan looks for. Finding: INCONCLUSIVE.
+
+judging #4
+  judge_check(4) try 1: ACCEPTED 61s tx 0x8210dce94e0436383328d1e3ba651c3e7f610cf029f9b74345603b97e75e7a53 → {"case":"EXPLICIT","check_id":4,"clarity_bucket":1,"content_hash":"f7ae714494496803","evidence_present":true,"findings_key":"INCONCLUSIVE|sev0|clr1|scp0|ev1|len4|f7ae714494496803","judged":true,"outcome":"INCONCLUSIVE","scope_bucket":0,"severity_bucket":0,"status":"OK"}
+  #4 https://www.wikipedia.org/wiki/Terms_of_Use ACCOUNT_TERMINATION: JUDGED INCONCLUSIVE  sev 0 clr 1 scp 0 ev true len 4 case EXPLICIT
+  reason: 1 clause state the practice explicitly (5 topical in all). Finding: INCONCLUSIVE.
+
+judging #5
+  judge_check(5) try 1: ACCEPTED 16s tx 0xc6d232ac834bde9b7b70f40f2d42ed0acd43681da191858f0c7cc23801eca636 → {"case":"UNREADABLE","check_id":5,"clarity_bucket":0,"content_hash":"1f831af6ebf37885","evidence_present":false,"findings_key":"INCONCLUSIVE|sev0|clr0|scp0|ev0|len0|1f831af6ebf37885","judged":true,"outcome":"INCONCLUSIVE","scope_bucket":0,"severity_bucket":0,"status":"OK"}
+  #5 https://example.com/ DATA_SALE: JUDGED INCONCLUSIVE  sev 0 clr 0 scp 0 ev false len 0 case UNREADABLE
+  reason: The page could not be rendered or was too short to be a terms document (for example a login wall or an error page). Finding: INCONCLUSIVE.
+
+judging #6
+  judge_check(6) try 1: UNSETTLED 2s tx null → (return unreadable)
+  judge_check(6) try 2: ACCEPTED 28s tx 0x881fb1fcd422a129cb642f32dc8ecbd7e0960cfcc74f947fec0810b8cf3d3d7c → {"case":"EXPLICIT","check_id":6,"clarity_bucket":6,"content_hash":"186994a5cfd7c727","evidence_present":true,"findings_key":"RED_FLAG|sev6|clr6|scp6|ev1|len7|186994a5cfd7c727","judged":true,"outcome":"RED_FLAG","scope_bucket":6,"severity_bucket":6,"status":"OK"}
+  #6 https://twitter.com/en/tos CONTENT_OWNERSHIP: JUDGED RED_FLAG  sev 6 clr 6 scp 6 ev true len 7 case EXPLICIT
+  quote: "in choosing to submit, input, create, generate, post, or display content on or through the services, you grant us a worldwide, non-exclusive, royalty-free license (with the right to sublicense) to use, copy, reproduce, process, adapt, modify, publish, transmit, display, upload, download, and distrib"
+  reason: 4 clauses state the practice explicitly (34 topical in all). Finding: RED FLAG - Broad license to your content.
+
+judging #7
+  judge_check(7) try 1: ACCEPTED 30s tx 0x3a00c9a0614c90bf2612e349508bfd11c55c3f3a8dc52981715744edb4412e96 → {"case":"EXPLICIT","check_id":7,"clarity_bucket":7,"content_hash":"6c42985288a51105","evidence_present":true,"findings_key":"RED_FLAG|sev7|clr7|scp6|ev1|len7|6c42985288a51105","judged":true,"outcome":"RED_FLAG","scope_bucket":6,"severity_bucket":7,"status":"OK"}
+  #7 https://twitter.com/en/tos MANDATORY_ARBITRATION: JUDGED RED_FLAG  sev 7 clr 7 scp 6 ev true len 7 case EXPLICIT
+  quote: "class action and jury trial waiver."
+  reason: 9 clauses state the practice explicitly (20 topical in all). Finding: RED FLAG - Mandatory arbitration / class action waiver.
+
+verify_check (recompute every stored field from the stored evidence)
+  #1: VERIFIED
+  #2: VERIFIED
+  #3: VERIFIED
+  #4: VERIFIED
+  #5: VERIFIED
+  #6: VERIFIED
+  #7: VERIFIED
+  get_flag_stats(DATA_SALE): {"CLEAN":1,"INCONCLUSIVE":2,"RED_FLAG":0} urls_flagged 0/3
+  get_flag_stats(CONTENT_OWNERSHIP): {"CLEAN":0,"INCONCLUSIVE":1,"RED_FLAG":1} urls_flagged 1/2
+  get_flag_stats(ACCOUNT_TERMINATION): {"CLEAN":0,"INCONCLUSIVE":1,"RED_FLAG":0} urls_flagged 0/1
+  get_flag_stats(MANDATORY_ARBITRATION): {"CLEAN":0,"INCONCLUSIVE":0,"RED_FLAG":1} urls_flagged 1/1
+  get_stats: {"balance_wei":"0","batches":1,"chain_balance_wei":"0","checks":8,"identity":"balance_wei == refundable_wei","judge_attempts":7,"judgments":7,"ledger_balanced":true,"owner":"0xb0431D1e70d3193AfCb8642daB2744A36fA163dE","paused":false,"refundable_wei":"0","refunded_wei":"0","refusals":1,"rubric_version":"1.0.0","stalled":0,"status_counts":{"JUDGED":7,"PENDING":1,"STALLED":0},"unsettled_attempts":0,"urls":5}

@@ -1,0 +1,10 @@
+import { connect } from "./harness.mjs";
+const c = connect({ address: "0x0000000000000000000000000000000000000000", role: "trigger" });
+const tx = await c.read.getTransaction({ hash: process.argv[2] });
+const cd = tx.consensus_data ?? {};
+const show = (r) => ({ node: r?.node_config?.address, vote: r?.vote, exec: r?.execution_result, eq: r?.eq_outputs ? JSON.stringify(r.eq_outputs).slice(0, 1500) : null, stderr: String(r?.genvm_result?.stderr ?? "").slice(-600) });
+console.log("status", tx.status, Object.keys(cd));
+console.log("leader", JSON.stringify(show(cd.leader_receipt?.[0]), null, 1));
+for (const v of cd.validators ?? []) console.log("validator", JSON.stringify(show(v), null, 1));
+console.log(JSON.stringify(cd.votes ?? {}, null, 1));
+if (process.argv[3]) console.log(JSON.stringify(tx, (k, x) => (typeof x === "bigint" ? x.toString() : x), 1).slice(0, 20000));

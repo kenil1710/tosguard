@@ -1,0 +1,33 @@
+{
+  "deployments": {
+    "studiodev": {
+      "network": "studiodev",
+      "chain_id": 61997,
+      "TOSGuard": {
+        "address": "0x47f5483B6F8F187AE667C55C967d35f802Ba4A02",
+        "deploy_tx": "0x57e6b06b2b84eb8cf5380aa3e0f0f733d4d577982d4a25dbcb9effef81282ab5",
+        "source_bytes": 89649,
+        "source_sha256": "6fc9259c9a859d31e2c74d143f0eada9c53c86796758a5c61eac3ad9de2f30e7",
+        "owner": "0xb0431D1e70d3193AfCb8642daB2744A36fA163dE",
+        "rubric_version": "1.0.0",
+        "cooldown_s": 120,
+        "stall_ttl_s": 3600,
+        "payable_methods": 0,
+        "deployed_at": "2026-09-23T15:39:57.608Z"
+      },
+      "explorer": "https://explorer-studio-dev.genlayer.com/",
+      "TOSGuardDemo": {
+        "address": "0x29b1B133337CF0C2a399fB22b92c29E821D478C5",
+        "deploy_tx": "0x2b67c5cedbc9fc0283cfde9c2bde8f3f8357704a2a050b8d34843ed32b525edb",
+        "source_bytes": 89649,
+        "source_sha256": "6fc9259c9a859d31e2c74d143f0eada9c53c86796758a5c61eac3ad9de2f30e7",
+        "owner": "0xb0431D1e70d3193AfCb8642daB2744A36fA163dE",
+        "rubric_version": "1.0.0",
+        "cooldown_s": 0,
+        "stall_ttl_s": 60,
+        "payable_methods": 0,
+        "deployed_at": "2026-09-23T15:40:07.025Z"
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+node_modules/
+test/node_modules/
+.env
+.env.local
+*.log
+.DS_Store
+__pycache__/
+*.pyc
+.accounts.json
+test/.accounts.json
+docs/seed-console.log
+docs/lifecycle-console.log

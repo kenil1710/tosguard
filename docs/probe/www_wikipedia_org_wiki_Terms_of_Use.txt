@@ -1,0 +1,216 @@
+Jump to content
+Main menu
+Search
+Appearance
+Donate
+Create account
+Log in
+Toggle the table of contents
+Terms of service
+12 languages
+Article
+Talk
+Read
+Edit
+View history
+Tools
+Checked
+From Wikipedia, the free encyclopedia
+(Redirected from Terms of Use)
+
+Please donate $2.75 this Wednesday.
+We know there are plenty of nonprofits worthy of your support. We wanted to remind you that Wikipedia is one of them.
+GIVE $2.75 MAYBE LATER
+September 23: Wikipedia still can't be sold
+We're sorry we've made several attempts to reach you. It's Wednesday, September 23, and Wikipedia is seeing fewer readers this year so your visit means a lot. If everyone reading this gave $2.75 today, we'd hit our goal quickly. Most readers don't donate; only 2% do. Wikipedia is run by a nonprofit, not by a billionaire. So if Wikipedia has given you $2.75 worth of knowledge, please give. Any contribution helps, whether it's $2.75 or $25.
+Give $2.75
+Give a different amount
+MAYBE LATER
+I ALREADY DONATED
+CLOSE
+For other uses, see Terms of Service (disambiguation).
+
+Terms of service, also known as terms of use and terms and conditions,[note 1] are the legal agreements between service providers and service consumers. The person must agree to abide by the terms of service in order to use the offered service. Terms of service can also be merely a disclaimer, especially regarding the use of websites. Vague language and lengthy sentences used in these terms of service have caused concerns about customer privacy and raised public awareness in many ways.
+
+A terms of service agreement is mainly used for legal purposes by companies which provide software or services, such as web browsers, e-commerce, web search engines, social media, and transport services.
+
+A legitimate terms of service agreement is legally binding and may be subject to change.[1] Companies can enforce the terms by refusing service. Customers can enforce by filing a lawsuit or arbitration case if they can show they were actually harmed by a breach of the terms. There is a heightened risk of data going astray during corporate changes, including mergers, divestitures, buyouts, downsizing, etc., when data can be transferred improperly.[2]
+
+Contentedit
+
+A terms of service agreement typically contains sections pertaining to one or more of the following topics:
+
+Disambiguation/definition of keywords and phrases
+User rights and responsibilities
+Proper or expected usage; definition of misuse
+Accountability for online actions, behavior, and conduct
+Privacy policy outlining the use of personal data
+Payment details such as membership or subscription fees, etc.
+Opt-out policy describing procedure for account termination, if available
+Sometimes contains an Arbitration clause detailing the dispute resolution process and limited rights to take a claim to court
+Disclaimer/Limitation of liability, clarifying the site's legal liability for damages incurred by users
+User notification upon modification of terms, if offered
+
+Among 102 companies marketing genetic testing to consumers in 2014 for health purposes, 71 had publicly available terms and conditions:[3]
+
+57 of the 71 had disclaimer clauses (including 10 disclaiming liability for injury caused by their own negligence)
+51 let the company change terms (including 17 without notice)
+34 allow data disclosure in certain circumstances
+31 require consumers to indemnify the company
+20 promise not to sell data
+
+Among 260 mass market consumer software license agreements in 2010:[4]
+
+91% disclaimed warranties of merchantability or fitness for purpose or said it was "As is"
+92% disclaimed consequential, incidental, special or foreseeable damages
+69% did not warrant the software was free of defects or would work as described in the manual
+55% capped damages at the purchase price or less
+36% said they were not warranting whether it infringed others' intellectual property rights
+32% required arbitration or a specific court
+17% required the customer to pay legal bills of the maker (indemnification), but not vice versa
+
+Among the terms and conditions of 31 cloud-computing services in January-July 2010, operating in England:[5]
+
+27 specified the law to be used (a US state or other country)
+most specify that consumers can claim against the company only in a particular city in that jurisdiction, though often the company can claim against the consumer anywhere
+some require claims to be brought within half a year to 2 years
+7 impose arbitration, all forbid illegal and objectionable conduct by the consumer
+13 can amend terms just by posting changes on their own website
+a majority disclaim responsibility for confidentiality or backups
+most promise to preserve data only briefly after terminating service
+few promise to delete data thoroughly when the customer leaves
+some monitor the customers' data to enforce their policies on use
+all disclaim warranties and almost all disclaim liability
+24 require the customer to indemnify them, a few indemnify the customer
+a few give credits for poor service, 15 promise "best efforts" and can suspend or stop at any time
+
+The researchers note that rules on location and time limits may be unenforceable for consumers in many jurisdictions with consumer protections, that acceptable use policies are rarely enforced, that quick deletion is dangerous if a court later rules the termination wrongful, that local laws often require warranties (and UK forced Apple to say so).
+
+Readabilityedit
+
+Among the 500 most-visited websites which use sign-in-wrap agreements in September 2018:[6]
+
+70% of agreements had average sentence lengths over 25 words, (where 25 or less is needed for consumer readability)
+median FRE (Flesch Reading Ease) score was 34 (where over 60 is considered readable by consumers)
+median F-K (Flesch-Kincaid) score was 15 years of school (498 of 500 had scores higher than the recommended 8th grade)
+
+Among 260 mass market consumer software license agreements which existed in both 2003 and 2010:[4]
+
+median and mean Flesch scores were 33 in both years, with a range from 14 to 64 in 2003, and from 15 to 55 in 2010 (where over 60 is considered readable by consumers)
+median number of words rose from 1,152 to 1,354, with range of 33 to 8,406 in 2003, and from 106 to 13,416 in 2010
+Public awarenessedit
+
+A 2013 documentary called Terms and Conditions May Apply publicized issues in terms of services.[7]
+
+In 2018, Dima Yarovinsky created the artwork I Agree, which consisted of printed versions of technology companies' terms of service.[8] He wanted to make a point that people agreeing to these terms often do not understand what they are agreeing to.[9]
+
+Clickwrapped.com rates 15 companies on their policies and practices with respect to using users' data, disclosing users' data, amending the terms, closing users' accounts, requiring arbitration, fining users, and clarity.
+
+Terms of Service; Didn't Read is a group effort that rates 67 companies' terms of service and privacy policies, though its site says the ratings are "outdated."[10] It also has browser add-ons that deliver the ratings while at the website of a rated company. Members of the group score each clause in each terms of service document, but "the same clause can have different scores depending on the context of the services it applies to."[11] The "Services" tab lists companies in no apparent order, with brief notes about significant clauses from each company. In particular, competitors are not listed together so that users can compare them. A link gives longer notes. It does not typically link to the exact wording from the company. The "Topics" tab lists topics (like "Personal Data" or "Guarantee"), with brief notes from some companies about aspects of the topic.
+
+TOSBack.org, supported by the Electronic Frontier Foundation, lists changes in terms and policies sequentially, 10 per page, for 160 pages, or nearly 1,600 changes, for "many online services."[12] There does not seem to be a way to find all changes for a particular company, or even which companies were tracked in any time period. It links to Terms of Service; Didn't Read, though that typically does not have any evaluation of the most recent changes listed at TOSBack.org.
+
+Terms of services are subject to change and vary from service to service, so several initiatives exist to increase public awareness by clarifying such differences in terms, including:
+
+Availability of previous terms
+Cancellation or termination of the account and/or service by user
+Copyright licensing on user content
+Data tracking policy and opt-out availability
+Indemnification or compensation for claims against account or content
+Notification and feedback prior to changes in terms
+Notification of government or third-party requests for personal data
+Notification prior to information transfer in event of merger or acquisition
+Pseudonym allowance
+Readability
+Saved or temporary first and third-party cookies
+Transparency of security practices
+Transparency on government or law enforcement requests for content removal
+
+Indie game developer Vestman developed the 2025 puzzle video game about terms of service Agreeee because he wanted "to use the game to draw people's attention to the fact that nobody reads the terms of service."[13]
+
+Criticism and lawsuitsedit
+AOLedit
+
+In 1994, the Washington Times reported that America Online (AOL) was selling detailed personal information about its subscribers to direct marketers, without notifying or asking its subscribers. That article led to the revision of AOL's terms of service three years later.
+
+On July 1, 1997, AOL posted their revised terms of service to take effect July 31, 1997, without formally notifying its users of the changes made, most notably a new policy which would grant third-party business partners, including a marketing firm, access to its members' telephone numbers. Several days before the changes were to take effect, an AOL member informed the media of the changes and the following news coverage incited a large influx of internet traffic on the AOL page which enabled users to opt out of having their names and numbers on marketing lists.[14]
+
+Sonyedit
+
+In 2011, George Hotz and other members of failOverflow were sued by Sony Corporation. Sony claimed that Hotz and others had committed breach of contract by violating the terms of service of the PlayStation Network and the Digital Millennium Copyright Act.[15]
+
+Instagramedit
+See also: Instagram § Criticism and lawsuits
+
+On December 17, 2012, Instagram and Facebook announced a change to their terms of use that caused a widespread outcry from its user base. The controversial clause stated: "you agree that a business or other entity may pay us to display your username, likeness, photos (along with any associated metadata), and/or actions you take, in connection with paid or sponsored content or promotions, without any compensation to you".
+
+There was no apparent option to opt out of the changed terms of use.[16] The move garnered severe criticism from privacy advocates as well as consumers. After one day, Instagram apologized, saying that it would remove the controversial language from its terms of use.[17] Kevin Systrom, a co-founder of Instagram, responded to the controversy, stating:
+
+Our intention in updating the terms was to communicate that we'd like to experiment with innovative advertising that feels appropriate on Instagram. Instead, it was interpreted by many that we were going to sell your photos to others without any compensation. This is not true and it is our mistake that this language is confusing. To be clear: it is not our intention to sell your photos. We are working on updated language in the terms to make sure this is clear.[18]
+
+Zapposedit
+
+Some terms of services are worded to allow unilateral amendment, where one party can change the agreement at any time without the other party's consent. A 2012 court case In re Zappos.com, Inc., Customer Data Security Breach Litigation held that Zappos.com's terms of use, with one such clause, was unenforceable.[19][20]
+
+The Walt Disney Companyedit
+
+On October 5, 2023, a 42-year-old woman named Kanokporn Tangsuan (who worked as a doctor at NYU Langone Health) was killed at Raglan Road Irish Pub at Disney Springs in Walt Disney World after going into anaphylactic shock due to increased levels of dairy and nuts in her system. Her widower, Jeffery Piccolo, filed a wrongful death lawsuit against Disney in February 2024, claiming that she had alerted staff to her severe allergy to both multiple times, but was ignored.[21] On May 31, Disney filed a motion to get the lawsuit dismissed, citing the terms of service of both the My Disney Experience app (which they booked tickets from) and Disney+ (which they had used a free trial of in the past). This term would require all legal disputes against Disney and its affiliates to be held in an individual binding arbitration.[22] The story's publicization in August 2024 prompted severe backlash against the Walt Disney Company, with many moving to cancel their subscriptions to Disney+ and for a boycott of other Disney products and services. Piccolo's legal team also argued against Disney's claims, first stating that the terms of service on both platforms were "effectively invisible", and that Piccolo "would have had no notice" of the conditions. They also argued that Piccolo's use of these services should have no effect on Tangsaun's right to be represented in this case.[22][23] Disney responded by claiming to be "deeply sorry" of the death, and that they were only defending themselves against a lawsuit towards the entire corporation.[24] The motion for the dismissal of the case was later withdrawn by Disney on August 20, 2024.[25]
+
+See alsoedit
+Abandonware
+Acceptable use policy
+Clickwrap license
+Browse wrap
+End-user license agreement
+Free-software license
+Glossary of legal terms in technology
+Good faith (law)
+Internet privacy
+License manager
+Comparison of free and open-source software licences
+Shrink wrap contract
+Software asset management
+Standard form contract
+Notesedit
+Commonly abbreviated as TOS or ToS, ToU, and T&C.
+Referencesedit
+"Terms of service Definition from PC Magazine Encyclopedia". pcmag.com. 2013. Retrieved 2013-01-07.
+John Del Piero; Jennifer Swanton; Tony Cardine (2017-08-28). "5 Ways to Secure Your Intellectual Property During Corporate Transitions". Legaltech News. Archived from the original on 2017-10-18. Retrieved 2017-09-05.
+Phillips, Andelka M. (2015). "Genomic Privacy and Direct-to-Consumer Genetics: Big Consumer Genetic Data -- What's in that Contract?". 2015 IEEE Security and Privacy Workshops. San Jose, CA: IEEE. pp. 60–64. doi:10.1109/SPW.2015.19. hdl:2262/77428. ISBN 978-1-4799-9933-0. S2CID 14504403.p
+Jump up to:
+Florencia Marotta-Wurgler; Robert Taylor (2013). "Set in Stone? Change and Innovation in Consumer Standard-Form Contracts" (PDF). New York University Law and Economics Working Papers. 88: 240–285.
+Bradshaw, Simon; Millard, Christopher; Walden, Ian (2010-09-02). "Contracts for Clouds: Comparison and Analysis of the Terms and Conditions of Cloud Computing Services" (PDF). Rochester, NY: Queen Mary University of London - Cloud Legal Project.
+Becher, Shmuel I.; Benoliel, Uri (2019-01-11). "The Duty to Read the Unreadable". Boston College Law Review. Rochester, NY. SSRN 3313837.
+Linden, Sheri (2013-07-17). "Review: 'Terms and Conditions May Apply' explores loss of privacy". Los Angeles Times. Retrieved 2026-02-23.
+Taggart, Emma (23 May 2018). "Artist Visualizes the Lengthy "Terms of Service" Agreements of Popular Social Media Apps". My Modern Met. Retrieved 4 November 2025.
+Huddleston, Yvette (7 December 2018). "Art meets technology at Bradford's National Science and Media Museum". The Yorkshire Post. Retrieved 4 November 2025.
+"Terms of Service; Didn't Read, home page". Retrieved 2017-03-15.
+"Terms of Service; Didn't Read, Topics". Archived from the original on 2018-06-16. Retrieved 2017-03-15.
+"TOSBack, The terms of service tracker". Retrieved 2017-03-15.
+Kenken (October 6, 2025). 『利用規約に同意したい』は「利用規約、読んでいますか？」と全ゲーマーに問いかける。TGS2025で誰も同意できなかった鬼畜アクションに込められた皮肉 ["Agreeee" is a question posed to all gamers: "Have you read the terms of service?" The irony embedded in the brutally difficult action that no one agreed to at TGS2025.]. Famitsu (in Japanese). Retrieved 7 May 2026.
+Kornblum, Janet (1997-07-29). "AOL dumps new member policy". CNet. Retrieved 2026-02-22.
+"Sony follows up, officially sues Geohot and fail0verflow over PS3 jailbreak". Engadget. 12 January 2011. Retrieved 2021-03-06.
+Pepitone, Julianne (December 18, 2012). "Instagram can now sell your photos for ads". CNNMoney. CNN. Archived from the original on March 2, 2013. Retrieved December 18, 2012.
+McCullagh, Declan; Donna Tam (18 December 2012). "Instagram apologizes to users: We won't sell your photos". CNET. Retrieved 19 December 2012.
+Systrom, Kevin (December 18, 2012). "Thank you, and we're listening". Instagram. Instagram. Archived from the original on May 2, 2017. Retrieved December 19, 2012.
+Goldman, Eric. "How Zappos' User Agreement Failed In Court and Left Zappos Legally Naked". Forbes. Retrieved 1 October 2013.
+Canino, Erin (November 2016). "The Electronic "Sign-in-Wrap" Contract: Issues of Notice and Assent, the Average Internet User Standard, and Unconscionability". UC Davis Law Review. 50: 541.
+"Long Island doctor died from anaphylaxis after eating at Disney Springs restaurant, lawsuit says". CBS News (WCBS-TV) New York. March 5, 2024.
+Jump up to:
+Roth, Emma (2024-08-14). "Disney wants to dismiss a wrongful death lawsuit because of a Disney Plus agreement". The Verge. Retrieved 2024-08-15.
+Guynn, Jessica. "Disney wrongful death lawsuit over allergy highlights danger of fine print". USA TODAY. Retrieved 2024-08-15.
+Betts, Anna (2024-08-15). "Disney defends use of streaming terms to block restaurant allergy death lawsuit". The Guardian. ISSN 0261-3077. Retrieved 2024-08-15.
+"Disney drops bid to have allergy-death lawsuit tossed because plaintiff signed up for Disney+". AP News. 2024-08-20. Retrieved 2024-10-06.
+Category: Terms of service
+This page was last edited on 10 September 2026, at 09:50 (UTC). Page was rendered with Parsoid.
+Text is available under the Creative Commons Attribution-ShareAlike 4.0 License; additional terms may apply. By using this site, you agree to the Terms of Use and Privacy Policy. Wikipedia® is a registered trademark of the Wikimedia Foundation, Inc., a non-profit organization.
+Privacy policy
+About Wikipedia
+Disclaimers
+Contact Wikipedia
+Legal & safety contacts
+Code of Conduct
+Developers
+Statistics
+Cookie statement
+Mobile view

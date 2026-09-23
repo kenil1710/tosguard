@@ -1,0 +1,26 @@
+lifecycle on DEMO 0x29b1B133337CF0C2a399fB22b92c29E821D478C5  (2026-09-23T15:43:51.594Z)
+  ✔ http URL refused without reverting  ACCEPTED → the URL must start with https:// tx 0xec9bf0d3ef42ffd5209df7df3a4caf9db316a1d5770c9f956b8711de18b64b49
+  ✔ private host refused without reverting  ACCEPTED → an IP-address host is refused; use the public domain name tx 0xc362078b562302e363b2edeb2d845b0c6ae8105dcc95b67f1dc41b497779b422
+  ✔ render-service host refused without reverting  ACCEPTED → a port or an IP-literal host is refused; use the public https:// address tx 0xb108d940c43dbc98f8af3c5a703fd32aefe7942bb2b07be3ed32802402b5a45c
+  ✔ free-text flag refused without reverting  ACCEPTED → unknown flag type 'they sell my data'; one of DATA_SALE, CONTENT_OWNERSHIP, AUTO_RENEWAL, MANDATORY_ARBITRATION, UNILATERAL_CHANGE, ACCOUNT_TERMINATION, LIABILITY_WAIVER tx 0xb3a0c196f4fa3802f3bde4208f7d4a03f089da04ae049519318c557bd36bcac0
+  ✔ short concern refused without reverting  ACCEPTED → the concern must be 20-200 characters, or left empty tx 0x828221e5e83e016bf420ff6f9e6e70101dfe1e7fe17052af5cc22e279f0b480a
+  ✔ batch with unknown flag refused without reverting  ACCEPTED → unknown flag type 'SPYWARE'; one of DATA_SALE, CONTENT_OWNERSHIP, AUTO_RENEWAL, MANDATORY_ARBITRATION, UNILATERAL_CHANGE, ACCOUNT_TERMINATION, LIABILITY_WAIVER tx 0x418682e9363018d6a6039dfb7340808ae7d56c8dbe8d032d614f66ed0248bc85
+  ✔ no refusal created a check
+  ✔ check_tos accepted  check #1 tx 0xee7348efffc9a0f03836bb5bebc2a431638d1222d6b4ac6b1c19ccd3e709e5ea
+  ✔ duplicate pending check refused  check #1 for this URL and flag is still pending; judge it with judge_check(1)
+  ✔ outsider cannot pause  only the owner can pause new checks
+  ✔ owner pauses  tx 0x2b219a84ac1ff87264823c1cbc48b546ccc7e8fa853632437d318594e378010c
+  ✔ new check refused while paused  new checks are paused by the owner; judging, settling and refunds are unaffected
+  waiting for the 60s stall window (block clock; up to 18s + retries)
+  ✔ settle_stalled works WHILE PAUSED, sent by a wallet that filed nothing  tx 0x4568630cd699a015cf7d7b6f05636de1d9d0d4a46ddab73def1d4a9c355b2917
+  ✔ stalled check is terminal with no outcome  No agreed judgment within 60s of the request; closed without an outcome. Submit a new check.
+  ✔ a stalled check cannot be judged  check #1 is stalled and can no longer change
+  ✔ owner unpauses
+
+cooldown on CANONICAL 0x47f5483B6F8F187AE667C55C967d35f802Ba4A02
+  ✔ first request accepted  check #8 tx 0x667cd705b20eb867cfec9f73eef90c5bee97e7a286bc64ba5964e7d4f7b7033c
+  ✔ second request inside 120s refused  one request per wallet per 120s; try again in 90s
+
+demo get_stats: {"balance_wei":"0","batches":0,"chain_balance_wei":"0","checks":1,"identity":"balance_wei == refundable_wei","judge_attempts":0,"judgments":0,"ledger_balanced":true,"owner":"0xb0431D1e70d3193AfCb8642daB2744A36fA163dE","paused":false,"refundable_wei":"0","refunded_wei":"0","refusals":10,"rubric_version":"1.0.0","stalled":1,"status_counts":{"JUDGED":0,"PENDING":0,"STALLED":1},"unsettled_attempts":0,"urls":1}
+
+18 passed, 0 failed
