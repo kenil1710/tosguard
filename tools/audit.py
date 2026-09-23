@@ -61,7 +61,12 @@ def const(name):
 # against an inert `genlayer` module. Nothing in that half touches storage.
 _stub = types.ModuleType("genlayer")
 _stub.gl = types.SimpleNamespace()
-_stub.__all__ = []
+# Python 3.12 evaluates annotations eagerly (3.14 defers them), so the names
+# the pure half annotates with must exist.
+_names = ["Address", "u8", "u16", "u32", "u64", "u128", "u256", "i32", "i64", "bigint"]
+for _n in _names:
+    setattr(_stub, _n, str if _n == "Address" else int)
+_stub.__all__ = _names
 sys.modules.setdefault("genlayer", _stub)
 _pure_tree = ast.parse(SRC)
 _cut = next(i for i, n in enumerate(_pure_tree.body) if isinstance(n, ast.ClassDef))
