@@ -26,7 +26,7 @@ class RenderProbe(gl.contract.Contract):
 		def leader_fn() -> dict:
 			try:
 				txt = gl.nondet.web.render(target, mode="text", wait_after_loaded=hold)
-				return {"ok": True, "text": str(txt)[:120000]}
+				return {"ok": True, "text": str(txt)[:200000]}
 			except Exception as e:
 				return {"ok": False, "text": "", "err": str(e)[:600]}
 

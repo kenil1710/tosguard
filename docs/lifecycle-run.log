@@ -1,29 +1,27 @@
-lifecycle on DEMO 0x0852F16602e3b2F8EE5B3d52aC9F73de6f4942A2  (2026-09-23T17:02:22.961Z)
-  ✔ http URL refused without reverting  ACCEPTED → the URL must start with https:// tx 0x87627012c41627a6a157a6396e7fa3ee9e41d430a2d29267990f7e349eacfa38
-  ✔ private host refused without reverting  ACCEPTED → an IP-address host is refused; use the public domain name tx 0x647b6a0e12f361c6b6380d919f91f4e6bd47c027c10d5aa612eed35fb432449a
-  ✔ render-service host refused without reverting  ACCEPTED → a port or an IP-literal host is refused; use the public https:// address tx 0xb25da4f97403c31c46e81f4e14272dab4d0cff5c29272e5240da9944263fa617
-  ✔ free-text flag refused without reverting  ACCEPTED → unknown flag type 'they sell my data'; one of DATA_SALE, CONTENT_OWNERSHIP, AUTO_RENEWAL, MANDATORY_ARBITRATION, UNILATERAL_CHANGE, ACCOUNT_TERMINATION, LIABILITY_WAIVER tx 0x1f7d46129761f17904fa70fcbebbe42f520a6f01f9e14594f2e860457bdfc6cf
-  ✔ short concern refused without reverting  ACCEPTED → the concern must be 20-200 characters, or left empty tx 0x865b590ae8be2a24cbec0c2b54abd4b5a4ccd668ddae82fd50876033e75ce4ad
-  ✔ batch with unknown flag refused without reverting  ACCEPTED → unknown flag type 'SPYWARE'; one of DATA_SALE, CONTENT_OWNERSHIP, AUTO_RENEWAL, MANDATORY_ARBITRATION, UNILATERAL_CHANGE, ACCOUNT_TERMINATION, LIABILITY_WAIVER tx 0x597225a36261ab9fbb7f9254f75f495d48559b28e0412c72382d6cd9ec71f8c2
+lifecycle on DEMO 0xa2de7729ca3EF2d036389d3aB7f5B7d6de20f074  (2026-09-23T20:21:14.314Z)
+  ✔ http URL refused without reverting  ACCEPTED → the URL must start with https:// tx 0xb61acb7260b1b43d03cb118ea22a144486abbbb7f01a3889e9382d6751c4f616
+  ✔ private host refused without reverting  ACCEPTED → an IP-address host is refused; use the public domain name tx 0x409586387acdb718a7de5af5e7fdae659f3d2d82a49dc8dd57de26ca53871e33
+  ✔ render-service host refused without reverting  ACCEPTED → a port or an IP-literal host is refused; use the public https:// address tx 0x2f52dc733d61f1f1e9ea7a97f2e335f4d19f55674cc821cef9e04db98d20a5bf
+  ✔ free-text flag refused without reverting  ACCEPTED → unknown flag type 'they sell my data'; one of DATA_SALE, CONTENT_OWNERSHIP, AUTO_RENEWAL, MANDATORY_ARBITRATION, UNILATERAL_CHANGE, ACCOUNT_TERMINATION, LIABILITY_WAIVER tx 0x3dcbec22cb264b22c4b9bbd62fae5c948d1c4f7d56ca110639b98e6533537ba9
+  ✔ short concern refused without reverting  ACCEPTED → the concern must be 20-200 characters, or left empty tx 0xb10793f57ed417ee32e7b2d082bc0b48a420d34b16a29e363f8ca5ce37d0904a
+  ✔ batch with unknown flag refused without reverting  ACCEPTED → unknown flag type 'SPYWARE'; one of DATA_SALE, CONTENT_OWNERSHIP, AUTO_RENEWAL, MANDATORY_ARBITRATION, UNILATERAL_CHANGE, ACCOUNT_TERMINATION, LIABILITY_WAIVER tx 0x50102ebc68e7d37dd5cd40fb2b3cc321ca8bd20b865928d5a55f67aa837a4ca7
   ✔ no refusal created a check
-  ✔ check_tos accepted  check #2 tx 0xae124d8b92b9de1f2e5de1ad56e483db30cd2d67550ac110a87069480ee7be0a
-  ✔ duplicate pending check refused  check #2 for this URL and flag is still pending; judge it with judge_check(2)
+  ✔ check_tos accepted  check #1 tx 0xc0b5d8535b3266ae2d619fff8c87d5ae1f02a0c146c64ccca10773ea22157938
+  ✔ duplicate pending check refused  check #1 for this URL and flag is still pending; judge it with judge_check(1)
   ✔ outsider cannot pause  only the owner can pause new checks
-  ✔ owner pauses  tx 0xda241805b585bc6971ca2163b1650d9740e9666ae8ee24a76a042c0a4aa0d19b
+  ✔ owner pauses  tx 0x566f77416248d516c541581e6b8008daa4bd190feb4ed0412cfeb75de80a34a4
   ✔ new check refused while paused  new checks are paused by the owner; judging, settling and refunds are unaffected
-  waiting for the 60s stall window (block clock; up to 29s + retries)
-  settle_stalled not yet: undefined
-  settle_stalled not yet: undefined
-  ✔ settle_stalled works WHILE PAUSED, sent by a wallet that filed nothing  tx 0xbadd525fa6af597177a8bf99759e6b83464e1a5cb52cf7ecc24db5273a311bfc
+  waiting for the 60s stall window (block clock; up to 25s + retries)
+  ✔ settle_stalled works WHILE PAUSED, sent by a wallet that filed nothing  tx 0x720dcd2f35f1e4bb1a2db11f21311a4d698ec6f006a4d37d5aa55a0eb4d73600
   ✔ stalled check is terminal with no outcome  No agreed judgment within 60s of the request; closed without an outcome. Submit a new check.
-  ✔ a stalled check cannot be judged  check #2 is stalled and can no longer change
+  ✔ a stalled check cannot be judged  check #1 is stalled and can no longer change
   ✔ owner unpauses
 
-cooldown on CANONICAL 0xCD994aCf7fE40d0A63Dda20f20ea78e69B994ed7
-  ✔ first request accepted  check #20 tx 0xb2722335e48b5cda6a31e997a340f75d1ebe79b5e7c30b60f7311c1e240ee5c2
-  ✔ second request inside 120s refused  one request per wallet per 120s; try again in 113s
-  ✔ ABSENT on a full-length TOS is pinned CLEAN with no model call  #20 CLEAN ABSENT tx 0x237f33f4e68628bda19f4a885b21c762c28c10f23a9e2b2d75034d657bd3021e
+cooldown on CANONICAL 0xeceFA5dc2E7BDA6c95492C707b67a51B9E95F159
+  ✔ first request accepted  check #19 tx 0xc7bb1efdbefd9bcec7411441bf4ed28b7fb925ff217fc3a3747420b67d4338f7
+  ✔ second request inside 120s refused  one request per wallet per 120s; try again in 112s
+  ✔ ABSENT on a full-length TOS is pinned CLEAN with no model call  #19 CLEAN ABSENT tx 0xb940a86bc6f9ff719248f208758d1974c4ba331437e9020fb9703429f940eb0a
 
-demo get_stats: {"balance_wei":"0","batches":0,"chain_balance_wei":"0","checks":2,"identity":"balance_wei == refundable_wei","judge_attempts":0,"judgments":0,"ledger_balanced":true,"owner":"0xb0431D1e70d3193AfCb8642daB2744A36fA163dE","paused":false,"refundable_wei":"0","refunded_wei":"0","refusals":20,"rubric_version":"1.1.0","stalled":2,"status_counts":{"JUDGED":0,"PENDING":0,"STALLED":2},"unsettled_attempts":0,"urls":1}
+demo get_stats: {"balance_wei":"0","batches":0,"chain_balance_wei":"0","checks":1,"identity":"balance_wei == refundable_wei","judge_attempts":0,"judgments":0,"ledger_balanced":true,"owner":"0xb0431D1e70d3193AfCb8642daB2744A36fA163dE","paused":false,"refundable_wei":"0","refunded_wei":"0","refusals":10,"rubric_version":"1.2.1","stalled":1,"status_counts":{"JUDGED":0,"PENDING":0,"STALLED":1},"unsettled_attempts":0,"urls":1}
 
 19 passed, 0 failed

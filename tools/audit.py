@@ -234,34 +234,35 @@ check(28, "https-only public URLs: http, IP literals, ports, credentials, intern
       and not P._parse_url("https://a.com:8080/")["ok"] and not P._parse_url("https://u@a.com/")["ok"]
       and not P._parse_url("https://studio-webdriver:4444/")["ok"]
       and not P._parse_url("https://svc.internal/")["ok"] and P._parse_url("https://duckduckgo.com/terms")["ok"])
-# 29 the confidence gate: 0 topical -> CLEAN, strength 1-2 -> INCONCLUSIVE, both
-#    with no model call; the model is reachable only at strength >= 3.
+# 29 the confidence gate over DISTINCT indicator families, for all 7 flags:
+#    0 matches -> CLEAN, 1 indicator -> INCONCLUSIVE (both no model),
+#    2-4 -> one-sided (lean or INCONCLUSIVE), 5+ -> full bracket.
 legal = ("Terms of Service. You agree to these terms. This agreement. Governing law applies. "
          "See our privacy policy. Jurisdiction lies with the courts.\n")
 pad = "Filler text here.\n" * 600
-SIGNAL = {
-    "DATA_SALE": "We may sell your personal data to data brokers number {i}.",
-    "CONTENT_OWNERSHIP": "You grant us a perpetual, irrevocable license to your content, grant {i}.",
-    "AUTO_RENEWAL": "Your subscription will automatically renew, plan {i}.",
-    "MANDATORY_ARBITRATION": "Claims go to binding arbitration, forum {i}.",
-    "UNILATERAL_CHANGE": "We may modify these terms at any time, version {i}.",
-    "ACCOUNT_TERMINATION": "We may terminate your account for any reason, rule {i}.",
-    "LIABILITY_WAIVER": "We shall not be liable for any damages, item {i}.",
-}
-gate_ok = const("MIN_KEYWORD_STRENGTH") == 3
+gate_ok = const("WEAK_MAX_STRENGTH") == 1 and const("STRONG_MIN_STRENGTH") == 5
 for k in P.FLAG_KEYS:
-    for n, want_case, want_allowed, want_pinned in (
-            (0, "ABSENT", ["CLEAN"], True), (1, "WEAK", ["INCONCLUSIVE"], True),
-            (2, "WEAK", ["INCONCLUSIVE"], True), (3, "EXPLICIT", None, False)):
-        clauses = "".join(SIGNAL[k].format(i=i) + "\n" for i in range(n))
+    flag = P._flag(k)
+    anchor = "".join(g[0] + " " for g in flag[4])
+    fams = flag[5]
+    for n in (0, 1, 2, 4, 5):
+        if n > len(fams):
+            continue
+        # one clause per family, each spelled with that family's first phrase
+        clauses = "".join("Clause %d: %s%s here.\n" % (i, anchor, fams[i][1][0])
+                          for i in range(n))
         br = P._bracket(k, P._read_page(legal + clauses + pad, True, k))
-        if br["case"] != want_case or br["pinned"] != want_pinned:
+        want = ("ABSENT" if n == 0 else "WEAK" if n <= 1 else
+                "MODERATE" if n < 5 else "STRONG")
+        if br["case"] != want or br["strength"] != n:
             gate_ok = False
-        if want_allowed is not None and br["allowed"] != want_allowed:
+        if n <= 1 and not br["pinned"]:
             gate_ok = False
-        if n == 3 and "RED_FLAG" not in br["allowed"]:
+        if want == "MODERATE" and br["allowed"] != ["RED_FLAG", "INCONCLUSIVE"]:
             gate_ok = False
-check(29, "confidence gate for all 7 flags: 0 matches CLEAN, strength 1-2 INCONCLUSIVE (no model), 3+ model",
+        if want == "STRONG" and br["allowed"] != ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]:
+            gate_ok = False
+check(29, "confidence gate on distinct indicators, all 7 flags: 0 CLEAN, 1 INCONCLUSIVE (no model), 2-4 one-sided, 5+ full",
       gate_ok)
 # 30 two-wide ranges
 widths_ok = True

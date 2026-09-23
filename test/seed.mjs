@@ -6,14 +6,14 @@
  *   node seed.mjs --run=2     # the SAME nine again, as new checks
  *   node compare_runs.mjs     # run 1 vs run 2: outcomes must be identical
  *
- * The nine:
- *   twitter.com/en/tos                  DATA_SALE              (consumer1)
- *   reddit.com/policies/user-agreement  CONTENT_OWNERSHIP      (consumer2)
- *   duckduckgo.com/terms                DATA_SALE              (consumer3)
- *   wikipedia.org/wiki/Terms_of_Use     ACCOUNT_TERMINATION    (consumer4)
- *   example.com                         DATA_SALE              (consumer5)
- *   twitter.com/en/tos   batch [CONTENT_OWNERSHIP, MANDATORY_ARBITRATION]   (consumer6)
- *   duckduckgo.com/terms batch [AUTO_RENEWAL, MANDATORY_ARBITRATION]        (outsider)
+ * The nine (chosen from docs/probe-report.md: every new URL was rendered by a
+ * validator first and only kept where its terms clearly address the flag):
+ *   x.com/en/tos          batch [CONTENT_OWNERSHIP, MANDATORY_ARBITRATION]  (consumer1)
+ *   duckduckgo.com/terms  batch [DATA_SALE, MANDATORY_ARBITRATION]          (consumer2)
+ *   discord.com/terms     batch [CONTENT_OWNERSHIP, ACCOUNT_TERMINATION]    (consumer3)
+ *   zoom.us/en/terms      UNILATERAL_CHANGE                                 (consumer4)
+ *   github.com/site/terms CONTENT_OWNERSHIP                                 (consumer5)
+ *   example.com           DATA_SALE                                         (consumer6)
  *
  * Every judge_check is sent by `trigger`, a wallet that filed nothing, because
  * judging is permissionless. An unsettled round stores nothing and is retried
@@ -33,15 +33,14 @@ const tries = Number(argOf("tries", "3"));
 const plain = (x) => JSON.parse(JSON.stringify(x, (k, v) => (typeof v === "bigint" ? v.toString() : v instanceof Map ? Object.fromEntries(v) : v)));
 
 const SINGLE = [
-  { role: "consumer1", url: "https://twitter.com/en/tos", flag: "DATA_SALE" },
-  { role: "consumer2", url: "https://www.reddit.com/policies/user-agreement", flag: "CONTENT_OWNERSHIP" },
-  { role: "consumer3", url: "https://duckduckgo.com/terms", flag: "DATA_SALE" },
-  { role: "consumer4", url: "https://www.wikipedia.org/wiki/Terms_of_Use", flag: "ACCOUNT_TERMINATION" },
-  { role: "consumer5", url: "https://example.com/", flag: "DATA_SALE" },
+  { role: "consumer4", url: "https://zoom.us/en/terms", flag: "UNILATERAL_CHANGE" },
+  { role: "consumer5", url: "https://github.com/site/terms", flag: "CONTENT_OWNERSHIP" },
+  { role: "consumer6", url: "https://example.com/", flag: "DATA_SALE" },
 ];
 const BATCHES = [
-  { role: "consumer6", url: "https://twitter.com/en/tos", flags: ["CONTENT_OWNERSHIP", "MANDATORY_ARBITRATION"] },
-  { role: "outsider", url: "https://duckduckgo.com/terms", flags: ["AUTO_RENEWAL", "MANDATORY_ARBITRATION"] },
+  { role: "consumer1", url: "https://x.com/en/tos", flags: ["CONTENT_OWNERSHIP", "MANDATORY_ARBITRATION"] },
+  { role: "consumer2", url: "https://duckduckgo.com/terms", flags: ["DATA_SALE", "MANDATORY_ARBITRATION"] },
+  { role: "consumer3", url: "https://discord.com/terms", flags: ["CONTENT_OWNERSHIP", "ACCOUNT_TERMINATION"] },
 ];
 
 const idsPath = new URL(`../docs/seed-run${run}-ids.json`, import.meta.url);
@@ -112,7 +111,7 @@ for (const [k, cid] of Object.entries(ids)) {
   const ck = await judgeUntilDone(cid);
   const v = plain(await trg.view("verify_check", [cid]));
   results[k] = { check: ck, verified: v.verified === true };
-  note(`  #${cid}: ${ck.status} ${ck.outcome || "-"}  sev ${ck.severity_bucket} clr ${ck.clarity_bucket} scp ${ck.scope_bucket} ev ${ck.evidence_present} len ${ck.page_length_bucket} case ${ck.case} strength ${ck.findings?.keyword_strength} model ${ck.findings?.model_called} hash ${ck.content_hash} verify ${v.verified}`);
+  note(`  #${cid}: ${ck.status} ${ck.outcome || "-"}  sev ${ck.severity_bucket} clr ${ck.clarity_bucket} scp ${ck.scope_bucket} ev ${ck.evidence_present} len ${ck.page_length_bucket} case ${ck.case} strength ${ck.findings?.keyword_strength} [${ck.findings?.indicators}] model ${ck.findings?.model_called} hash ${ck.content_hash} verify ${v.verified}`);
   if (ck.quote) note(`  quote: "${ck.quote.slice(0, 240)}"`);
   note(`  reason: ${ck.reason}`);
   await sleep(8_000);

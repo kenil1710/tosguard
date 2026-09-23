@@ -134,3 +134,34 @@ now treats that error as transient. #19 (DuckDuckGo × MANDATORY_ARBITRATION)
 was judged by hand (tx `0x6e7df18d…`: CLEAN, ABSENT, no model call), and the
 whole lifecycle was re-run cleanly (19/19, `docs/lifecycle-run.log`), which
 filed and judged #20 the same way.
+
+## 10. v1.2: new seed URLs, probed first
+
+A fresh throwaway probe (`0xF486287FcfD88fab91049F1e448A3e8f94f24ba2`, capture
+cap raised to the contract's 200,000 characters) rendered every candidate URL
+through a validator (`docs/probe2-run.log`):
+
+| URL | rendered | tx |
+|---|---|---|
+| `https://x.com/en/tos` | 121,189 chars, 28s | `0x22681a92…` |
+| `https://discord.com/terms` | 59,842 chars, 26s | `0xb30f7d74…` |
+| `https://zoom.us/en/terms` | 89,178 chars, 27s | `0xe50f9483…` |
+| `https://github.com/site/terms` | 46,287 chars, 32s | `0xa565b32f…` |
+| `https://duckduckgo.com/terms` | 8,410 chars, 20s | `0x7031e875…` |
+| `https://example.com/` | 129 chars, 20s | `0xc084a3f0…` |
+
+`tools/probe_report.py` runs the contract's own scanner over those bytes:
+strength, indicators, case and the first 500 characters of the relevant
+clauses per candidate (`docs/probe-report.md`). That report found the false
+positives described in contracts/NOTES.md §2 (Zoom's "with third party
+offerings" and "you may not share an account"), and showed that Zoom's terms
+carry no data-sale indicator at all.
+
+The first v1.2.0 seed run (`docs/superseded/v1.2.0/seed-run1.log`) returned
+8/9 decisive, but its quotes showed GitHub's and Discord's RED_FLAG resting on
+*feedback* licences and Zoom's on a content-deletion clause. v1.2.1 fixed the
+context rules, and the final pair of runs (`docs/seed-run1.log`,
+`docs/seed-run2.log`, compared in `docs/seed-compare.md`) was identical: 0
+flips, 0 exact-field differences, 8/9 decisive, every quote from a clause
+about its flag. Studio returned "Server busy" twice during run 2; the harness
+retried both.

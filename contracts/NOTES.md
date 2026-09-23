@@ -25,54 +25,102 @@ Severity is not asked of the model at all (`tools/audit.py` check 31). A
 consumer comparing "RED_FLAG sev 7" across two services is comparing the same
 arithmetic, not two moods.
 
-## 2. The bracket and the confidence gate
+## 2. The confidence gate (v1.2.0): distinct indicators
 
-| case | meaning | allowed |
+| evidence | case | allowed | model |
+|---|---|---|---|
+| render failed, or < 500 normalised chars | UNREADABLE | INCONCLUSIVE | no |
+| fewer than 4 of 16 legal markers | NOT_TOS | INCONCLUSIVE | no |
+| no clause hits any indicator or denial | ABSENT | CLEAN | no |
+| 0–1 distinct indicators | WEAK | INCONCLUSIVE | no |
+| 2–4 distinct indicators | MODERATE | the side the clauses lean, or INCONCLUSIVE | yes |
+| 5+ distinct indicators | STRONG | RED_FLAG / CLEAN / INCONCLUSIVE (CLEAN / INCONCLUSIVE if denials outnumber) | yes |
+
+**Indicator families.** Each flag has the families from the v1.2.0 brief —
+DATA_SALE: sell, share, third party, partner, advertiser, marketing, monetize,
+personalized ads, data broker, affiliate; and so on for the other six
+(`get_vocabulary()` lists them all with their phrases). Each family is spelled
+as the multi-word phrases terms really use ("with third parties", "advertising
+partners", "binding arbitration"). **Keyword strength is the number of
+distinct families hit**: thirty clauses that each say "with third parties" are
+one indicator. That is what separates a page that addresses a practice from
+many angles from a page that repeats one boilerplate phrase.
+
+**Anchor groups and exclusions.** A clause only counts for a flag if it is
+*about* that flag: it must contain a word from every anchor group, and none of
+the flag's exclusions.
+
+| flag | anchor groups | exclusions |
 |---|---|---|
-| UNREADABLE | render failed, or < 500 normalised chars | INCONCLUSIVE (pinned, no model) |
-| NOT_TOS | fewer than 4 of 16 legal markers (login wall, block page, home page) | INCONCLUSIVE (pinned) |
-| ABSENT | a legal document with zero topical clauses | CLEAN (pinned) |
-| WEAK | topical clauses, but keyword strength 0–2 | INCONCLUSIVE (pinned) |
-| DENIED | keyword strength ≥ 3, all of it denials | CLEAN / INCONCLUSIVE |
-| EXPLICIT | keyword strength ≥ 3, at least one explicit clause | RED_FLAG / CLEAN / INCONCLUSIVE |
+| CONTENT_OWNERSHIP | license / licence / grant / rights to / right to use | feedback, suggestion, licences granted *to you* ("we give you", "grants you", "license to you", "you may use"…) |
+| UNILATERAL_CHANGE | terms / agreement **and** modif / change / amend / revis / update | — |
+| ACCOUNT_TERMINATION | account / access / service | — |
 
-**Keyword strength** is the number of clauses that explicitly state the
-practice ("royalty-free license", "binding arbitration", "sell your personal
-information") plus the number that explicitly deny it ("we do not sell").
-Passing topical mentions — "our partners", "third-party software", an
-article's summary of other companies' terms — are not signal.
+So "our perpetual calendar is available worldwide" is not a content licence,
+"by sending us feedback, you grant us a perpetual, irrevocable license" is a
+licence over *ideas you send*, not over what you post, and "Zoom may delete any
+customer content at any time without notice if it violates this agreement" is
+not a change to the terms (`TestClassify`, `TestRealRenders`).
 
-### Why the gate exists (v1.1.0)
+**One-sided MODERATE bracket.** With 2–4 indicators the model may only choose
+between the side the clauses lean (RED_FLAG if clauses stating the practice
+are at least as many as denial clauses, else CLEAN) and INCONCLUSIVE. Moderate
+evidence can never be read the opposite way round, which removes the
+CLEAN ↔ RED flip entirely from that tier.
 
-The first two seed runs judged the same pages twice. Every content hash
-matched, and three outcomes did not (docs/PROBE.md §6):
+**Excerpt coverage.** The excerpt is capped (24 clauses, 6,000 chars). It is
+filled with one clause per family hit *first*, so the cap can never hide an
+indicator and silently change the strength the validators compare.
 
-| page · flag | matched clauses | keyword strength | run 1 | run 2 |
-|---|---|---|---|---|
-| X · DATA_SALE | 33 | 1 (one qualified denial) | CLEAN | INCONCLUSIVE |
-| DuckDuckGo · DATA_SALE | 7 | 0 | INCONCLUSIVE | CLEAN |
-| wikipedia.org article · ACCOUNT_TERMINATION | 5 | 1 | INCONCLUSIVE | RED_FLAG |
-| X · CONTENT_OWNERSHIP | 34 | 5 | RED_FLAG | RED_FLAG |
-| X · MANDATORY_ARBITRATION | 20 | 9 | RED_FLAG | RED_FLAG |
+### What the probe changed
 
-A gate on RAW matches (1–2 → INCONCLUSIVE, 3+ → model) would not have touched
-any of the three flips: they had 33, 7 and 5 matches. What separates them from
-the stable pages is how many clauses actually *say* something — 0 or 1 against
-5 and 9. So the gate counts signal clauses, and below 3 the answer is
-INCONCLUSIVE with no model call: the same bytes always give the same answer,
-because no reader is consulted. Above it, the model reads a page that states
-its position several times over.
+Before any URL was seeded, a throwaway probe rendered each candidate through a
+real validator and the scanner was run over those exact bytes
+(`docs/probe-report.md`). Two false positives turned up and were fixed before
+deploying:
 
-The cost is deliberate. X's terms touch data sharing thirty times without
-saying "we sell your data"; DuckDuckGo's terms never state their no-sale
-promise (it is in the privacy policy). Both are now INCONCLUSIVE on every run,
-instead of CLEAN on some and INCONCLUSIVE on others. For a consumer, a stable
-"the terms don't settle it" is worth more than a coin flip.
+- Zoom: "used in connection **with third party** offerings" counted as data
+  sharing. The singular "with third party …" forms are gone; "with third
+  parties", "to third parties", "third-party advertis…/partners/data" remain.
+- Zoom: "you may **not share** an account" counted as a denial of data
+  sharing. Denial clauses decide the MODERATE lean, so a false denial could tip
+  a page towards CLEAN. DATA_SALE denials now need the service as subject ("we
+  do not share", "does not share").
 
-An ABSENT page (no topical clause at all) is CLEAN at any length. v1.0 made a
-short silent page INCONCLUSIVE in case the render was truncated; the brief for
-1.1.0 sets zero matches to CLEAN, and the 500-character floor and the
-legal-marker test still route error pages and login walls to INCONCLUSIVE.
+The first v1.2.0 seed run (kept in `docs/superseded/v1.2.0/`) then showed two
+more, by reading the *quotes* rather than the outcomes — all RED_FLAG, all
+consensus-agreed, and two of them resting on the wrong clause:
+
+- GitHub and Discord CONTENT_OWNERSHIP quoted their **feedback** clauses
+  ("if you give us ideas … you grant us a perpetual, irrevocable license"),
+  which also supplied the "perpetual" and "irrevocable" indicators. X's
+  "**we give you** a … royalty-free license to use the software" counted too.
+- Zoom UNILATERAL_CHANGE quoted "Zoom may delete any customer content, at any
+  time without notice … this agreement" — content removal, not a change of
+  terms.
+
+v1.2.1 added the exclusions and the second UNILATERAL_CHANGE anchor group
+above. GitHub (8 → 4 indicators) and Zoom (6 → 4) moved from STRONG to
+MODERATE, where the model may only answer RED_FLAG or INCONCLUSIVE, and every
+quote now comes from a clause about the flag. A RED_FLAG resting on the wrong
+clause is a wrong RED_FLAG even when the page deserves one.
+
+Zoom × DATA_SALE then has no indicator at all — Zoom's terms do not discuss
+selling data (its privacy statement does) — so it failed the "clear keyword
+presence" test and was replaced by Zoom × UNILATERAL_CHANGE (6 indicators).
+
+### History
+
+- v1.0 let the model judge any page with an explicit phrase or three topical
+  clauses. Re-running the seed flipped three borderline outcomes with
+  identical content hashes (docs/PROBE.md §6).
+- v1.1 gated on clauses that explicitly state or deny the practice (≥ 3). It
+  was stable, but so narrow that "we may share information with advertising
+  partners" was not evidence, and most seed checks were INCONCLUSIVE.
+- v1.2.0 counts distinct indicator families and adds the one-sided MODERATE
+  tier.
+- v1.2.1 adds anchor groups and exclusions after the first v1.2.0 run quoted
+  feedback and content-deletion clauses as evidence.
 
 ## 3. Denials are cut clause-wide
 

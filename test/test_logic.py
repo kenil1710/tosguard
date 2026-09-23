@@ -732,10 +732,15 @@ NO_SALE2 = "DuckDuckGo does not share personal information with advertisers."
 SALE3 = ("We may disclose your personal information to third parties for "
          "advertising.")
 NO_SALE3 = "We will not sell or rent your personal information to data brokers."
-# The confidence gate needs MIN_KEYWORD_STRENGTH (3) signal clauses before a
-# model is asked; these pages carry exactly three.
-RED3 = (SALE, SALE2, SALE3)
-DENY3 = (NO_SALE, NO_SALE2, NO_SALE3)
+SALE4 = ("We share data with our advertising partners to show personalized "
+         "ads, and we may monetize your data.")
+# A STRONG DATA_SALE page: seven distinct indicators (sell, share, third
+# party, partner, monetize, personalized ads, data broker).
+RED3 = (SALE, SALE2, SALE3, SALE4)
+# A MODERATE page that leans CLEAN: three denials against one clause that hits
+# two indicators (share, partner).
+DENY_SIGNAL = "We share data with our advertising partners only in aggregate."
+DENY3 = (NO_SALE, NO_SALE2, NO_SALE3, DENY_SIGNAL)
 LICENSE = ("You grant us a worldwide, royalty-free, perpetual, irrevocable and "
            "sublicensable license to use your content.")
 RETAIN = "You retain ownership of your content and we do not claim ownership."
@@ -897,11 +902,52 @@ class TestHelpers(unittest.TestCase):
 
     def test_every_phrase_is_lower_case(self):
         for f in P.FLAGS:
-            for group in (f[4], f[5], f[6]):
-                for p in group:
-                    self.assertEqual(p, p.lower(), f[0] + ": " + p)
+            phrases = list(f[6]) + list(f[7])
+            for group in f[4]:
+                phrases.extend(group)
+            for name, patterns in f[5]:
+                phrases.append(name)
+                phrases.extend(patterns)
+            for p in phrases:
+                self.assertEqual(p, p.lower(), f[0] + ": " + p)
         for p in P.BROAD_WORDS + P.LEGAL_MARKERS:
             self.assertEqual(p, p.lower())
+
+    def test_indicator_families_match_the_brief(self):
+        want = {
+            "DATA_SALE": ["sell", "share", "third party", "partner",
+                          "advertiser", "marketing", "monetize",
+                          "personalized ads", "data broker", "affiliate"],
+            "CONTENT_OWNERSHIP": ["license", "perpetual", "irrevocable",
+                                  "sublicense", "royalty-free", "worldwide",
+                                  "reproduce", "derivative", "grant us"],
+            "AUTO_RENEWAL": ["auto-renew", "automatically renew", "recurring",
+                             "cancel before", "billing cycle", "continuous"],
+            "MANDATORY_ARBITRATION": ["arbitration", "waive", "class action",
+                                      "individual basis",
+                                      "dispute resolution",
+                                      "binding arbitration"],
+            "UNILATERAL_CHANGE": ["modify these terms", "change at any time",
+                                  "sole discretion", "without notice",
+                                  "revised terms",
+                                  "continued use constitutes"],
+            "ACCOUNT_TERMINATION": ["terminate", "suspend", "disable",
+                                    "any reason", "sole discretion",
+                                    "without notice", "right to remove"],
+            "LIABILITY_WAIVER": ["not liable", "no warranty", "as is",
+                                 "limitation of liability",
+                                 "consequential damages", "indemnify"],
+        }
+        for f in P.FLAGS:
+            self.assertEqual([n for n, _ in f[5]], want[f[0]], f[0])
+
+    def test_no_brand_names_in_the_vocabulary(self):
+        for f in P.FLAGS:
+            for _n, patterns in f[5]:
+                for p in patterns:
+                    for brand in ("discord", "github", "zoom", "twitter",
+                                  "duckduckgo", "reddit"):
+                        self.assertNotIn(brand, p)
 
     def test_base_severities_leave_room_for_broad(self):
         for f in P.FLAGS:
@@ -1134,45 +1180,55 @@ for _i, _row in enumerate(HAS_CASES):
     setattr(TestHas, "test_has_%02d" % _i, _make_has(_i, _row))
 
 CLASSIFY_CASES = [
-    ("DATA_SALE", SALE, "explicit"),
-    ("DATA_SALE", SALE2, "explicit"),
+    ("DATA_SALE", SALE, "signal"),
+    ("DATA_SALE", SALE2, "signal"),
+    ("DATA_SALE", SALE4, "signal"),
     ("DATA_SALE", NO_SALE, "denied"),
     ("DATA_SALE", NO_SALE2, "denied"),
+    ("DATA_SALE", NO_SALE3, "denied"),
     ("DATA_SALE", "We never sell or rent personal information.", "denied"),
-    ("DATA_SALE", "Our affiliates help us run the service.", "topical"),
-    ("DATA_SALE", "Please seek legal counsel.", ""),
     ("DATA_SALE", "We do not sell your data, but we share your data with "
-                  "third parties.", "explicit"),
-    ("CONTENT_OWNERSHIP", LICENSE, "explicit"),
+                  "third parties.", "signal"),
+    ("DATA_SALE", "You may not share an account with any other individual.",
+     ""),
+    ("DATA_SALE", "The software may be used in connection with third party "
+                  "offerings.", ""),
+    ("DATA_SALE", "Please seek legal counsel.", ""),
+    ("DATA_SALE", "We show personalized ads based on your activity.",
+     "signal"),
+    ("CONTENT_OWNERSHIP", LICENSE, "signal"),
     ("CONTENT_OWNERSHIP", RETAIN, "denied"),
     ("CONTENT_OWNERSHIP", "You retain ownership of your content, but you "
-                          "grant us a worldwide license to it.", "explicit"),
-    ("CONTENT_OWNERSHIP", "Our trademarks are our intellectual property.",
-     "topical"),
-    ("AUTO_RENEWAL", RENEW, "explicit"),
+                          "grant us a worldwide license to it.", "signal"),
+    ("CONTENT_OWNERSHIP", "Our perpetual calendar is available worldwide.",
+     ""),
+    ("CONTENT_OWNERSHIP", "By sending us feedback, you grant us a perpetual, "
+                          "irrevocable license to use it.", ""),
+    ("CONTENT_OWNERSHIP", "We give you a personal, worldwide, royalty-free "
+                          "license to use the software.", ""),
+    ("AUTO_RENEWAL", RENEW, "signal"),
     ("AUTO_RENEWAL", "Subscriptions do not renew; you pay once.", "denied"),
-    ("AUTO_RENEWAL", "You can cancel from the settings page.", "topical"),
-    ("AUTO_RENEWAL", "The weather is nice.", ""),
-    ("MANDATORY_ARBITRATION", ARB, "explicit"),
+    ("AUTO_RENEWAL", "You can cancel from the settings page.", ""),
+    ("MANDATORY_ARBITRATION", ARB, "signal"),
     ("MANDATORY_ARBITRATION", "This agreement does not require arbitration "
                               "of disputes.", "denied"),
-    ("MANDATORY_ARBITRATION", "Small claims court remains available.",
-     "topical"),
-    ("UNILATERAL_CHANGE", CHANGE, "explicit"),
-    ("UNILATERAL_CHANGE", "We may change these terms and will give you "
-                          "advance notice of 30 days.", "denied"),
-    ("UNILATERAL_CHANGE", "Changes to these terms are listed below.",
-     "topical"),
-    ("ACCOUNT_TERMINATION", TERMINATE, "explicit"),
+    ("MANDATORY_ARBITRATION", "Small claims court remains available.", ""),
+    ("UNILATERAL_CHANGE", CHANGE, "signal"),
+    ("UNILATERAL_CHANGE", "We will notify you in advance of changes to "
+                          "these terms.", "denied"),
+    ("UNILATERAL_CHANGE", "You may cancel at any time.", ""),
+    ("UNILATERAL_CHANGE", "We may delete any content at any time without "
+                          "notice if it violates this agreement.", ""),
+    ("UNILATERAL_CHANGE", "If you continue to use the services after the "
+                          "changes, you agree to the revised terms.",
+     "signal"),
+    ("ACCOUNT_TERMINATION", TERMINATE, "signal"),
     ("ACCOUNT_TERMINATION", "We terminate accounts only for cause after a "
                             "review.", "denied"),
-    ("ACCOUNT_TERMINATION", "You may terminate this agreement by deleting "
-                            "your account.", "topical"),
-    ("LIABILITY_WAIVER", LIABLE, "explicit"),
+    ("ACCOUNT_TERMINATION", "Contact support for anything else.", ""),
+    ("LIABILITY_WAIVER", LIABLE, "signal"),
     ("LIABILITY_WAIVER", "The service is provided \"as is\" without "
-                         "warranties.", "explicit"),
-    ("LIABILITY_WAIVER", "Our liability is described in section 9.",
-     "topical"),
+                         "warranties.", "signal"),
     ("LIABILITY_WAIVER", "Hello world.", ""),
 ]
 
@@ -1269,59 +1325,53 @@ BRACKET_CASES = [
     ("not_tos", NOT_TOS_PAGE, "DATA_SALE", "NOT_TOS", ["INCONCLUSIVE"]),
     ("absent_long", tos(pad=80), "DATA_SALE", "ABSENT", ["CLEAN"]),
     ("absent_short", tos(pad=20), "DATA_SALE", "ABSENT", ["CLEAN"]),
-    # --- the confidence gate: fewer than three signal clauses -> pinned
-    ("weak_topical_only", tos("Our affiliates help us.", "Our partners help "
-                              "us.", "Advertising funds the service.",
-                              "Partners of every kind are welcome."),
+    ("absent_other_flag", tos(*RED3), "AUTO_RENEWAL", "ABSENT", ["CLEAN"]),
+    # --- WEAK: 0-1 distinct indicators -> INCONCLUSIVE, no model
+    ("weak_one_indicator", tos("We work with third parties.",
+                               "Our vendors work with third parties too."),
      "DATA_SALE", "WEAK", ["INCONCLUSIVE"]),
-    ("weak_one_passing", tos("Our affiliates help us run the service."),
+    ("weak_repeated_indicator", tos(*["Partner " + str(i) + " works with "
+                                      "third parties." for i in range(30)]),
      "DATA_SALE", "WEAK", ["INCONCLUSIVE"]),
-    ("weak_one_explicit", tos(SALE), "DATA_SALE", "WEAK", ["INCONCLUSIVE"]),
-    ("weak_two_explicit", tos(SALE, SALE2), "DATA_SALE", "WEAK",
-     ["INCONCLUSIVE"]),
-    ("weak_one_denial", tos(NO_SALE), "DATA_SALE", "WEAK", ["INCONCLUSIVE"]),
-    ("weak_explicit_and_denial", tos(SALE, NO_SALE), "DATA_SALE", "WEAK",
-     ["INCONCLUSIVE"]),
-    ("weak_many_topical_one_denial", tos(NO_SALE, "Our affiliates help us.",
-                                         "Our partners help us.",
-                                         "Advertising funds the service."),
-     "DATA_SALE", "WEAK", ["INCONCLUSIVE"]),
-    ("weak_license", tos(LICENSE), "CONTENT_OWNERSHIP", "WEAK",
-     ["INCONCLUSIVE"]),
-    ("weak_arb", tos(ARB), "MANDATORY_ARBITRATION", "WEAK", ["INCONCLUSIVE"]),
-    # --- three or more signal clauses -> the model judges inside the bracket
-    ("explicit", tos(*RED3), "DATA_SALE", "EXPLICIT",
-     ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]),
-    ("explicit_mixed", tos(SALE, SALE2, NO_SALE), "DATA_SALE", "EXPLICIT",
-     ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]),
-    ("denied", tos(*DENY3), "DATA_SALE", "DENIED", ["CLEAN", "INCONCLUSIVE"]),
-    ("denied_with_topical", tos(*DENY3, "Affiliates exist.",
-                                "Partners exist too."), "DATA_SALE", "DENIED",
+    ("weak_denials_only", tos(NO_SALE, NO_SALE2, NO_SALE3), "DATA_SALE",
+     "WEAK", ["INCONCLUSIVE"]),
+    ("weak_arb", tos("Claims are resolved by arbitration."),
+     "MANDATORY_ARBITRATION", "WEAK", ["INCONCLUSIVE"]),
+    # --- MODERATE: 2-4 indicators -> the side they lean, or INCONCLUSIVE
+    ("moderate_red", tos(SALE), "DATA_SALE", "MODERATE",
+     ["RED_FLAG", "INCONCLUSIVE"]),
+    ("moderate_red_two_clauses", tos(SALE, SALE2), "DATA_SALE", "MODERATE",
+     ["RED_FLAG", "INCONCLUSIVE"]),
+    ("moderate_clean", tos(*DENY3), "DATA_SALE", "MODERATE",
      ["CLEAN", "INCONCLUSIVE"]),
-    ("license", tos(LICENSE, "You grant us a perpetual license to your "
-                    "content.", "This license is irrevocable and "
-                    "transferable."), "CONTENT_OWNERSHIP", "EXPLICIT",
+    ("moderate_tie_leans_red", tos(SALE, NO_SALE), "DATA_SALE", "MODERATE",
+     ["RED_FLAG", "INCONCLUSIVE"]),
+    ("moderate_arb", tos(ARB), "MANDATORY_ARBITRATION", "MODERATE",
+     ["RED_FLAG", "INCONCLUSIVE"]),
+    # --- STRONG: 5+ indicators -> the full bracket
+    ("strong_sale", tos(*RED3), "DATA_SALE", "STRONG",
      ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]),
-    ("renew", tos(RENEW, "Fees recur until you cancel.",
-                  "The subscription will renew automatically each year.",
-                  "You will continue to be charged monthly."), "AUTO_RENEWAL",
-     "EXPLICIT", ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]),
-    ("arb", tos(ARB, "All claims are resolved by binding arbitration.",
-                "You waive your right to a jury trial."),
-     "MANDATORY_ARBITRATION", "EXPLICIT", ["RED_FLAG", "CLEAN",
-                                           "INCONCLUSIVE"]),
-    ("change", tos(CHANGE, "We may modify these terms without notice.",
-                   "Changes to these terms are effective immediately upon "
-                   "posting."), "UNILATERAL_CHANGE", "EXPLICIT",
+    ("strong_but_denied", tos(SALE4, SALE, NO_SALE, NO_SALE2, NO_SALE3),
+     "DATA_SALE", "STRONG", ["CLEAN", "INCONCLUSIVE"]),
+    ("license", tos(LICENSE), "CONTENT_OWNERSHIP", "STRONG",
      ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]),
-    ("terminate", tos(TERMINATE, "We may suspend any account at our sole "
-                      "discretion.", "We can terminate access without "
-                      "cause."), "ACCOUNT_TERMINATION", "EXPLICIT",
+    ("renew", tos(RENEW, "Recurring payments are billed each billing cycle.",
+                  "The plan continues until you cancel it."), "AUTO_RENEWAL",
+     "STRONG", ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]),
+    ("arb", tos(ARB, "Claims proceed on an individual basis only.",
+                "Dispute resolution is final and binding."),
+     "MANDATORY_ARBITRATION", "STRONG",
      ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]),
-    ("liable", tos(LIABLE, "We are not liable for lost data.",
-                   "The service is provided as is and without warranty."),
-     "LIABILITY_WAIVER", "EXPLICIT", ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]),
-    ("other_flag_absent", tos(*RED3), "AUTO_RENEWAL", "ABSENT", ["CLEAN"]),
+    ("change", tos(CHANGE, "We may revise the terms at our sole discretion.",
+                   "Revised terms are effective upon posting."),
+     "UNILATERAL_CHANGE", "STRONG", ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]),
+    ("terminate", tos(TERMINATE, "We may disable your account at our sole "
+                      "discretion."), "ACCOUNT_TERMINATION", "STRONG",
+     ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]),
+    ("liable", tos(LIABLE, "The service is provided as is with no "
+                   "warranty.", "Our aggregate liability shall not exceed "
+                   "$100.", "You agree to indemnify us."),
+     "LIABILITY_WAIVER", "STRONG", ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]),
     ("not_tos_with_clause", "We may sell your personal data. " * 40,
      "DATA_SALE", "NOT_TOS", ["INCONCLUSIVE"]),
 ]
@@ -1373,42 +1423,75 @@ class TestBracketRules(unittest.TestCase):
                     self.assertEqual(br["clarity"][o], (0, 0))
                     self.assertEqual(br["scope"][o], (0, 0))
 
-    def test_red_flag_needs_an_explicit_clause_past_the_gate(self):
+    def test_red_flag_needs_two_indicators_and_a_red_lean(self):
         for name, br in _all_brackets():
             if "RED_FLAG" in br["allowed"]:
-                self.assertEqual(br["case"], "EXPLICIT", name)
-                self.assertGreaterEqual(br["strength"],
-                                        P.MIN_KEYWORD_STRENGTH, name)
-                self.assertTrue(br["analysis"]["explicit"], name)
+                self.assertIn(br["case"], ("MODERATE", "STRONG"), name)
+                self.assertGreaterEqual(br["strength"], 2, name)
+                an = br["analysis"]
+                self.assertTrue(len(an["signal"]) >= len(an["denied"]), name)
 
     def test_gate_tiers(self):
-        """0 topical -> CLEAN, strength 0-2 -> INCONCLUSIVE, 3+ -> model."""
+        """0 matches -> CLEAN; 0-1 indicators -> INCONCLUSIVE; 2-4 ->
+        one-sided; 5+ -> full bracket."""
         rows = [((), "ABSENT", ["CLEAN"], True),
-                (("Our affiliates help us.",), "WEAK", ["INCONCLUSIVE"], True),
-                ((SALE,), "WEAK", ["INCONCLUSIVE"], True),
-                ((SALE, SALE2), "WEAK", ["INCONCLUSIVE"], True),
-                ((SALE, SALE2, SALE3), "EXPLICIT",
-                 ["RED_FLAG", "CLEAN", "INCONCLUSIVE"], False)]
+                (("We work with third parties.",), "WEAK",
+                 ["INCONCLUSIVE"], True),
+                ((SALE,), "MODERATE", ["RED_FLAG", "INCONCLUSIVE"], False),
+                ((SALE, SALE2), "MODERATE", ["RED_FLAG", "INCONCLUSIVE"],
+                 False),
+                (RED3, "STRONG", ["RED_FLAG", "CLEAN", "INCONCLUSIVE"],
+                 False)]
         for clauses, case, allowed, pinned in rows:
             br = br_of(tos(*clauses))
             self.assertEqual((br["case"], br["allowed"], br["pinned"]),
                              (case, allowed, pinned), repr(clauses))
 
-    def test_gate_counts_denials_as_signal(self):
-        br = br_of(tos(SALE, NO_SALE, NO_SALE3))
-        self.assertEqual(br["strength"], 3)
-        self.assertFalse(br["pinned"])
+    def test_strength_counts_distinct_families(self):
+        br = br_of(tos(*RED3))
+        self.assertEqual(br["strength"], len(br["analysis"]["indicators"]))
+        self.assertEqual(br["analysis"]["indicators"],
+                         ["sell", "share", "third party", "partner",
+                          "monetize", "personalized ads", "data broker"])
 
-    def test_topical_mentions_are_not_signal(self):
-        many = ["Partner program " + str(i) + " is described in the help "
-                "pages." for i in range(40)]
+    def test_repeating_one_phrase_is_one_indicator(self):
+        many = ["Clause " + str(i) + ": we share data with third parties."
+                for i in range(40)]
         br = br_of(tos(*many))
+        self.assertEqual(br["strength"], 2)   # share + third party
+        self.assertEqual(br["case"], "MODERATE")
+
+    def test_denials_are_not_indicators(self):
+        br = br_of(tos(NO_SALE, NO_SALE2, NO_SALE3))
         self.assertEqual(br["strength"], 0)
-        self.assertEqual(br["case"], "WEAK")
+        self.assertEqual(len(br["analysis"]["denied"]), 3)
+
+    def test_moderate_is_one_sided(self):
+        for name, br in _all_brackets():
+            if br["case"] == "MODERATE":
+                self.assertEqual(len(br["allowed"]), 2, name)
+                self.assertEqual(br["allowed"][1], "INCONCLUSIVE", name)
+                self.assertNotEqual(br["allowed"][0], "INCONCLUSIVE", name)
+
+    def test_excerpt_cap_never_hides_an_indicator(self):
+        filler_clauses = ["Clause " + str(i) + " we share data with third "
+                          "parties." for i in range(100)]
+        page = tos(*filler_clauses, "We use personalized ads everywhere.",
+                   "Zeta: we may monetize your data.")
+        br = br_of(page)
+        self.assertIn("personalized ads", br["analysis"]["indicators"])
+        self.assertIn("monetize", br["analysis"]["indicators"])
+
+    def test_anchor_required_for_content_ownership(self):
+        br = br_of(tos("Our perpetual calendar is available worldwide.",
+                       "Reproduce the error before filing a report."),
+                   "CONTENT_OWNERSHIP")
+        self.assertEqual(br["case"], "ABSENT")
 
     def test_weak_never_calls_model(self):
         fresh()
-        WEB.serve(URL, tos(SALE, SALE2))
+        WEB.serve(URL, tos("We work with third parties."))
+        MODEL.serve("RED_FLAG", 5, 5)
         out = P._collect(facts())
         self.assertEqual(out["outcome"], "INCONCLUSIVE")
         self.assertEqual(out["case"], "WEAK")
@@ -1416,8 +1499,8 @@ class TestBracketRules(unittest.TestCase):
         self.assertEqual(MODEL.calls, 0)
 
     def test_weak_is_identical_on_every_run(self):
-        page = tos(NO_SALE, *["Partner " + str(i) + " exists." for i in
-                              range(30)])
+        page = tos(NO_SALE, *["Partner " + str(i) + " works with third "
+                              "parties." for i in range(30)])
         outs = set()
         for _ in range(5):
             fresh()
@@ -1459,10 +1542,11 @@ class TestBracketRules(unittest.TestCase):
         self.assertEqual(broad["severity_red"], 7)
 
     def test_caps_raise_clarity(self):
-        plain = ("We are not liable for damages.", "We are not liable for "
-                 "lost data.", "We are not responsible for any loss.")
+        plain = ("We are not liable for damages.", "The service is provided "
+                 "as is with no warranty.")
         a = br_of(tos(*plain), "LIABILITY_WAIVER")
-        b = br_of(tos(LIABLE, *plain[1:]), "LIABILITY_WAIVER")
+        b = br_of(tos("WE ARE NOT LIABLE FOR ANY DAMAGES WHATSOEVER TO "
+                      "ANYONE.", plain[1]), "LIABILITY_WAIVER")
         self.assertGreater(b["clarity"]["RED_FLAG"][0],
                            a["clarity"]["RED_FLAG"][0])
 
@@ -1526,16 +1610,19 @@ class TestDerive(unittest.TestCase):
         self.assertEqual(d["quote"], P._norm(ARB))
 
     def test_reason_grammar(self):
-        one = P._derive(self.f, ev_of(tos(SALE, NO_SALE, NO_SALE3)),
-                        "RED_FLAG", 3, 2)["reason"]
-        two = P._derive(self.f, ev_of(tos(SALE, SALE2, NO_SALE)), "RED_FLAG",
-                        3, 2)
-        self.assertIn("1 clause states", one)
-        self.assertIn("2 clauses state", two["reason"])
+        one = P._derive(self.f, ev_of(tos("We work with third parties.")),
+                        "RED_FLAG", 0, 0)["reason"]
+        two = P._derive(self.f, ev_of(tos(SALE, NO_SALE)), "RED_FLAG", 3, 2)
+        self.assertIn("1 matching clause, 1 distinct indicator (third party)",
+                      one)
+        self.assertIn("2 matching clauses, 2 distinct indicators (sell, data "
+                      "broker), 1 denial clause", two["reason"])
 
     def test_weak_reason_names_the_gate(self):
-        r = P._derive(self.f, ev_of(tos(SALE)), "RED_FLAG", 0, 0)["reason"]
-        self.assertIn("only 1 state or deny it explicitly (3 needed", r)
+        r = P._derive(self.f, ev_of(tos("We work with third parties.")),
+                      "RED_FLAG", 0, 0)["reason"]
+        self.assertIn("too little evidence to judge (2 or more indicators "
+                      "are needed)", r)
 
     def test_quote_for_clean_is_denial(self):
         d = P._derive(self.f, ev_of(tos(*DENY3)), "CLEAN", 2, 0)
@@ -1746,7 +1833,9 @@ FORGERIES = [
     ("legal_count", 0),
     ("caps_count", 5),
     ("matched_total", 99),
-    ("explicit_count", 0),
+    ("signal_count", 0),
+    ("indicators_csv", "sell"),
+    ("keyword_strength", 9),
     ("denied_count", 3),
     ("broad_count", 9),
     ("case", "MENTIONED"),
@@ -1863,7 +1952,7 @@ class TestAgrees(unittest.TestCase):
         self.assertFalse(P._agrees(self.a, c))
 
     def test_different_outcome_refused(self):
-        b = honest(self.f, self.page, "CLEAN")
+        b = honest(self.f, self.page, "INCONCLUSIVE")
         self.assertFalse(P._agrees(self.a, b))
 
     def test_any_honest_pair_with_same_outcome_agrees(self):
@@ -2432,7 +2521,9 @@ class TestStats(unittest.TestCase):
 
     def test_preview_bracket(self):
         p = self.c.preview_bracket("DATA_SALE", tos(*RED3))
-        self.assertEqual(p["case"], "EXPLICIT")
+        self.assertEqual(p["case"], "STRONG")
+        self.assertEqual(p["keyword_strength"], 7)
+        self.assertTrue(p["model_called"])
         self.assertIn("RED_FLAG", p["allowed"])
         self.assertFalse(self.c.preview_bracket("X", "y")["ok"])
 
@@ -2567,18 +2658,21 @@ class TestOwner(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 REAL = [
-    # (fixture, flag, the case the scan lands in on the captured render)
-    # The three pages that flipped between the first two seed runs: all now
-    # below the gate, so INCONCLUSIVE with no model call.
-    ("twitter_tos.txt", "DATA_SALE", ("WEAK",)),
-    ("twitter_tos.txt", "CONTENT_OWNERSHIP", ("EXPLICIT",)),
-    ("twitter_tos.txt", "MANDATORY_ARBITRATION", ("EXPLICIT",)),
-    ("twitter_tos.txt", "LIABILITY_WAIVER", ("EXPLICIT",)),
-    ("duckduckgo_terms.txt", "DATA_SALE", ("WEAK",)),
-    ("wikipedia_terms.txt", "ACCOUNT_TERMINATION", ("WEAK",)),
-    ("duckduckgo_terms.txt", "AUTO_RENEWAL", ("WEAK",)),
-    ("duckduckgo_terms.txt", "MANDATORY_ARBITRATION", ("ABSENT",)),
-    ("example_com.txt", "DATA_SALE", ("UNREADABLE",)),
+    # (fixture, flag, case, strength) on the renders captured on Studio Dev
+    # by the v1.2.0 probe (docs/probe-report.md). The nine seed checks first.
+    ("x_tos.txt", "CONTENT_OWNERSHIP", "STRONG", 6),
+    ("x_tos.txt", "MANDATORY_ARBITRATION", "STRONG", 5),
+    ("duckduckgo_terms.txt", "DATA_SALE", "ABSENT", 0),
+    ("duckduckgo_terms.txt", "MANDATORY_ARBITRATION", "ABSENT", 0),
+    ("discord_terms.txt", "CONTENT_OWNERSHIP", "STRONG", 7),
+    ("discord_terms.txt", "ACCOUNT_TERMINATION", "MODERATE", 4),
+    ("zoom_terms.txt", "UNILATERAL_CHANGE", "MODERATE", 4),
+    ("github_terms.txt", "CONTENT_OWNERSHIP", "MODERATE", 4),
+    ("example_com.txt", "DATA_SALE", "UNREADABLE", 0),
+    # ...and the ones that were considered and left out.
+    ("zoom_terms.txt", "DATA_SALE", "ABSENT", 0),
+    ("x_tos.txt", "DATA_SALE", "WEAK", 0),
+    ("wikipedia_terms.txt", "ACCOUNT_TERMINATION", "ABSENT", 0),
 ]
 
 
@@ -2590,27 +2684,67 @@ class TestRealRenders(unittest.TestCase):
         return path.read_text(encoding="utf8")
 
     def test_fixtures_bracket_as_captured(self):
-        for name, flag, cases in REAL:
+        for name, flag, case, strength in REAL:
             br = br_of(self._real(name), flag)
-            self.assertIn(br["case"], cases, name + " " + flag)
+            self.assertEqual((br["case"], br["strength"]), (case, strength),
+                             name + " " + flag)
 
-    def test_twitter_disclosure_clause_is_a_denial(self):
-        # ...but a qualified one beside many topical clauses, so the case is
-        # MENTIONED and RED_FLAG stays reachable.
-        an = br_of(self._real("twitter_tos.txt"))["analysis"]
-        self.assertEqual(an["explicit"], [])
+    def test_seed_is_at_least_five_decisive_or_model_judged(self):
+        decisive = 0
+        for name, flag, _case, _st in REAL[:9]:
+            br = br_of(self._real(name), flag)
+            if br["allowed"] == ["CLEAN"] or not br["pinned"]:
+                decisive += 1
+        self.assertGreaterEqual(decisive, 5)
+
+    def test_zoom_integrations_are_not_data_sharing(self):
+        # "in connection with third party offerings" and "you may not share
+        # an account" were false indicator / false denial in the first
+        # v1.2.0 draft.
+        an = br_of(self._real("zoom_terms.txt"))["analysis"]
+        self.assertEqual(an["signal"], [])
+        self.assertEqual(an["denied"], [])
+
+    def test_feedback_licences_are_not_content_licences(self):
+        for name in ("discord_terms.txt", "github_terms.txt"):
+            an = br_of(self._real(name), "CONTENT_OWNERSHIP")["analysis"]
+            for s in an["signal"]:
+                self.assertNotIn("feedback", s, name)
+
+    def test_quotes_are_about_the_flag(self):
+        want = {("discord_terms.txt", "CONTENT_OWNERSHIP"): "sublicensable",
+                ("github_terms.txt", "CONTENT_OWNERSHIP"): "your content",
+                ("zoom_terms.txt", "UNILATERAL_CHANGE"): "revised terms",
+                ("x_tos.txt", "CONTENT_OWNERSHIP"): "you grant us"}
+        for (name, flag), needle in want.items():
+            d = P._derive(facts(flag=flag), ev_of(self._real(name), flag),
+                          "RED_FLAG", 9, 9)
+            self.assertIn(needle, d["quote"], name)
+
+    def test_x_disclosure_clause_is_a_denial(self):
+        an = br_of(self._real("x_tos.txt"))["analysis"]
+        self.assertEqual(an["signal"], [])
         self.assertTrue(any("do not disclose" in s for s in an["denied"]))
 
-    def test_twitter_arbitration_quote_is_a_clause(self):
-        page = self._real("twitter_tos.txt")
-        d = P._derive(facts(url="https://twitter.com/en/tos",
+    def test_discord_termination_leans_red(self):
+        br = br_of(self._real("discord_terms.txt"), "ACCOUNT_TERMINATION")
+        self.assertEqual(br["allowed"], ["RED_FLAG", "INCONCLUSIVE"])
+        d = P._derive(facts(url="https://discord.com/terms",
+                            flag="ACCOUNT_TERMINATION"),
+                      ev_of(self._real("discord_terms.txt"),
+                            "ACCOUNT_TERMINATION"), "RED_FLAG", 9, 9)
+        self.assertIn("for any reason", d["quote"])
+
+    def test_x_arbitration_quote_is_a_clause(self):
+        page = self._real("x_tos.txt")
+        d = P._derive(facts(url="https://x.com/en/tos",
                             flag="MANDATORY_ARBITRATION"),
                       ev_of(page, "MANDATORY_ARBITRATION"), "RED_FLAG", 9, 9)
         self.assertGreater(len(d["quote"]), 80)
 
-    def test_twitter_license_is_quoted(self):
-        page = self._real("twitter_tos.txt")
-        d = P._derive(facts(url="https://twitter.com/en/tos",
+    def test_x_license_is_quoted(self):
+        page = self._real("x_tos.txt")
+        d = P._derive(facts(url="https://x.com/en/tos",
                             flag="CONTENT_OWNERSHIP"),
                       ev_of(page, "CONTENT_OWNERSHIP"), "RED_FLAG", 9, 9)
         self.assertIn("royalty-free license", d["quote"])
@@ -2621,17 +2755,14 @@ class TestRealRenders(unittest.TestCase):
         self.assertEqual(d["outcome"], "INCONCLUSIVE")
         self.assertFalse(d["model_called"])
 
-    def test_duckduckgo_has_no_explicit_sale(self):
-        an = br_of(self._real("duckduckgo_terms.txt"))["analysis"]
-        self.assertEqual(an["explicit"], [])
-
     def test_real_page_length_buckets(self):
         self.assertEqual(ev_of(self._real("duckduckgo_terms.txt"))
                          ["length_bucket"], 3)
         self.assertEqual(ev_of(self._real("wikipedia_terms.txt"))
                          ["length_bucket"], 4)
-        self.assertEqual(ev_of(self._real("twitter_tos.txt"))
-                         ["length_bucket"], 7)
+        self.assertEqual(ev_of(self._real("x_tos.txt"))["length_bucket"], 7)
+        self.assertEqual(ev_of(self._real("discord_terms.txt"))
+                         ["length_bucket"], 6)
 
     def test_real_renders_are_deterministic(self):
         for path in sorted(FIXTURES.glob("*.txt")):

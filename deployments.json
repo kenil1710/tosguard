@@ -4,29 +4,29 @@
       "network": "studiodev",
       "chain_id": 61997,
       "TOSGuard": {
-        "address": "0xCD994aCf7fE40d0A63Dda20f20ea78e69B994ed7",
-        "deploy_tx": "0xdcb253f52e695c6a29abe9d74a4ff57e946fed9e1db7feb5ccf3e2f00118d910",
-        "source_bytes": 90825,
-        "source_sha256": "8ebd6060e7ae30bad9968f96574a8b9eae15ec086c6c21ca932fc642c1a8c034",
+        "address": "0xeceFA5dc2E7BDA6c95492C707b67a51B9E95F159",
+        "deploy_tx": "0x44bb44c810951256dff26a421095b5609c45fec16ed14d62790a063a0966bf45",
+        "source_bytes": 99742,
+        "source_sha256": "a210c5d52778d907d990d48a35dbfcbb915d7f461872f63f4c34421a782310ac",
         "owner": "0xb0431D1e70d3193AfCb8642daB2744A36fA163dE",
-        "rubric_version": "1.1.0",
+        "rubric_version": "1.2.1",
         "cooldown_s": 120,
         "stall_ttl_s": 3600,
         "payable_methods": 0,
-        "deployed_at": "2026-09-23T16:40:35.816Z"
+        "deployed_at": "2026-09-23T20:01:53.915Z"
       },
       "explorer": "https://explorer-studio-dev.genlayer.com/",
       "TOSGuardDemo": {
-        "address": "0x0852F16602e3b2F8EE5B3d52aC9F73de6f4942A2",
-        "deploy_tx": "0x7d2d482a78064c1b4802278cad47b797560e8f471a72c78d9b73cc7fc57fd29c",
-        "source_bytes": 90825,
-        "source_sha256": "8ebd6060e7ae30bad9968f96574a8b9eae15ec086c6c21ca932fc642c1a8c034",
+        "address": "0xa2de7729ca3EF2d036389d3aB7f5B7d6de20f074",
+        "deploy_tx": "0x844471a77ccb62301e5d5fd3ceee4b43c5aae72328bcfb14b9420ba289b6ebb6",
+        "source_bytes": 99742,
+        "source_sha256": "a210c5d52778d907d990d48a35dbfcbb915d7f461872f63f4c34421a782310ac",
         "owner": "0xb0431D1e70d3193AfCb8642daB2744A36fA163dE",
-        "rubric_version": "1.1.0",
+        "rubric_version": "1.2.1",
         "cooldown_s": 0,
         "stall_ttl_s": 60,
         "payable_methods": 0,
-        "deployed_at": "2026-09-23T16:40:43.602Z"
+        "deployed_at": "2026-09-23T20:02:00.156Z"
       }
     }
   }

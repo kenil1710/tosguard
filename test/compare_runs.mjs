@@ -18,7 +18,7 @@ const r2 = JSON.parse(readFileSync(new URL("../docs/seed-run2-ids.json", import.
 
 const EXACT = [
   ["outcome", (x) => x.outcome], ["severity", (x) => x.severity_bucket], ["evidence", (x) => x.evidence_present],
-  ["length", (x) => x.page_length_bucket], ["case", (x) => x.case], ["strength", (x) => x.findings.keyword_strength],
+  ["length", (x) => x.page_length_bucket], ["case", (x) => x.case], ["strength", (x) => x.findings.keyword_strength], ["indicators", (x) => x.findings.indicators],
   ["model", (x) => x.findings.model_called], ["content_hash", (x) => x.content_hash], ["status", (x) => x.status],
 ];
 const lines = ["| page · flag | run 1 | run 2 | outcome | case | strength | model | content hash | sev | clr / scp | identical |", "|---|---|---|---|---|---|---|---|---|---|---|"];
