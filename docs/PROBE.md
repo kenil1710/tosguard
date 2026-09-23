@@ -111,3 +111,26 @@ the lifecycle's "a stalled check cannot be judged"), so the second execution
 saw a state without the first. The stored record is consistent — one judge
 attempt, one judgment in `get_stats` — and `verify_check(6)` passes. This is
 recorded as a Studio Dev state-visibility observation, not explained further.
+
+## 8. After the confidence gate (v1.1.0): two runs, identical
+
+§6's flips were all on pages with 0 or 1 signal clauses (explicit statements
+plus explicit denials) and 5–33 raw matches. v1.1.0 answers any page below 3
+signal clauses without a model: INCONCLUSIVE if it touches the topic, CLEAN if
+it never does. The nine checks were then seeded twice on one deployment
+(`docs/seed-run1.log`, `docs/seed-run2.log`) and compared from the chain by
+`test/compare_runs.mjs` (`docs/seed-compare.md`): **0 outcome flips, 0
+differences in any exact field**. Seven of the nine never reached a model.
+The two that did (X's license clause at strength 5, X's arbitration clause at
+strength 9) returned RED_FLAG with the same severity, clarity and scope both
+times, as they had in both pre-gate runs.
+
+## 9. "Server busy" is congestion
+
+During the v1.1.0 lifecycle run Studio answered a read with `Server busy: all
+8 execution slots occupied, retry later` (-32006, `retry_after_seconds: 2`),
+and the script died before judging canonical check #19. `test/harness.mjs`
+now treats that error as transient. #19 (DuckDuckGo × MANDATORY_ARBITRATION)
+was judged by hand (tx `0x6e7df18d…`: CLEAN, ABSENT, no model call), and the
+whole lifecycle was re-run cleanly (19/19, `docs/lifecycle-run.log`), which
+filed and judged #20 the same way.

@@ -729,6 +729,13 @@ SALE = "We may sell your personal information to data brokers and advertisers."
 SALE2 = "We share your personal data with third parties for marketing."
 NO_SALE = "We do not sell your personal information to anyone."
 NO_SALE2 = "DuckDuckGo does not share personal information with advertisers."
+SALE3 = ("We may disclose your personal information to third parties for "
+         "advertising.")
+NO_SALE3 = "We will not sell or rent your personal information to data brokers."
+# The confidence gate needs MIN_KEYWORD_STRENGTH (3) signal clauses before a
+# model is asked; these pages carry exactly three.
+RED3 = (SALE, SALE2, SALE3)
+DENY3 = (NO_SALE, NO_SALE2, NO_SALE3)
 LICENSE = ("You grant us a worldwide, royalty-free, perpetual, irrevocable and "
            "sublicensable license to use your content.")
 RETAIN = "You retain ownership of your content and we do not claim ownership."
@@ -1261,37 +1268,60 @@ BRACKET_CASES = [
     ("unreadable", "Loading...", "DATA_SALE", "UNREADABLE", ["INCONCLUSIVE"]),
     ("not_tos", NOT_TOS_PAGE, "DATA_SALE", "NOT_TOS", ["INCONCLUSIVE"]),
     ("absent_long", tos(pad=80), "DATA_SALE", "ABSENT", ["CLEAN"]),
-    ("absent_short", tos(pad=20), "DATA_SALE", "ABSENT", ["INCONCLUSIVE"]),
-    ("sparse", tos("Our affiliates help us run the service."), "DATA_SALE",
-     "SPARSE", ["CLEAN", "INCONCLUSIVE"]),
-    ("denied", tos(NO_SALE), "DATA_SALE", "DENIED", ["CLEAN", "INCONCLUSIVE"]),
-    ("denied_many", tos(NO_SALE, NO_SALE2, "Affiliates exist.",
-                        "Partners exist too."), "DATA_SALE", "DENIED",
+    ("absent_short", tos(pad=20), "DATA_SALE", "ABSENT", ["CLEAN"]),
+    # --- the confidence gate: fewer than three signal clauses -> pinned
+    ("weak_topical_only", tos("Our affiliates help us.", "Our partners help "
+                              "us.", "Advertising funds the service.",
+                              "Partners of every kind are welcome."),
+     "DATA_SALE", "WEAK", ["INCONCLUSIVE"]),
+    ("weak_one_passing", tos("Our affiliates help us run the service."),
+     "DATA_SALE", "WEAK", ["INCONCLUSIVE"]),
+    ("weak_one_explicit", tos(SALE), "DATA_SALE", "WEAK", ["INCONCLUSIVE"]),
+    ("weak_two_explicit", tos(SALE, SALE2), "DATA_SALE", "WEAK",
+     ["INCONCLUSIVE"]),
+    ("weak_one_denial", tos(NO_SALE), "DATA_SALE", "WEAK", ["INCONCLUSIVE"]),
+    ("weak_explicit_and_denial", tos(SALE, NO_SALE), "DATA_SALE", "WEAK",
+     ["INCONCLUSIVE"]),
+    ("weak_many_topical_one_denial", tos(NO_SALE, "Our affiliates help us.",
+                                         "Our partners help us.",
+                                         "Advertising funds the service."),
+     "DATA_SALE", "WEAK", ["INCONCLUSIVE"]),
+    ("weak_license", tos(LICENSE), "CONTENT_OWNERSHIP", "WEAK",
+     ["INCONCLUSIVE"]),
+    ("weak_arb", tos(ARB), "MANDATORY_ARBITRATION", "WEAK", ["INCONCLUSIVE"]),
+    # --- three or more signal clauses -> the model judges inside the bracket
+    ("explicit", tos(*RED3), "DATA_SALE", "EXPLICIT",
+     ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]),
+    ("explicit_mixed", tos(SALE, SALE2, NO_SALE), "DATA_SALE", "EXPLICIT",
+     ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]),
+    ("denied", tos(*DENY3), "DATA_SALE", "DENIED", ["CLEAN", "INCONCLUSIVE"]),
+    ("denied_with_topical", tos(*DENY3, "Affiliates exist.",
+                                "Partners exist too."), "DATA_SALE", "DENIED",
      ["CLEAN", "INCONCLUSIVE"]),
-    ("mentioned", tos("Our affiliates help us.", "Our partners help us.",
-                      "Advertising funds the service."), "DATA_SALE",
-     "MENTIONED", ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]),
-    ("mentioned_beats_denial", tos(NO_SALE, "Our affiliates help us.",
-                                   "Our partners help us.",
-                                   "Advertising funds the service."),
-     "DATA_SALE", "MENTIONED", ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]),
-    ("explicit", tos(SALE), "DATA_SALE", "EXPLICIT",
+    ("license", tos(LICENSE, "You grant us a perpetual license to your "
+                    "content.", "This license is irrevocable and "
+                    "transferable."), "CONTENT_OWNERSHIP", "EXPLICIT",
      ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]),
-    ("explicit_beats_denial", tos(SALE, NO_SALE), "DATA_SALE", "EXPLICIT",
+    ("renew", tos(RENEW, "Fees recur until you cancel.",
+                  "The subscription will renew automatically each year.",
+                  "You will continue to be charged monthly."), "AUTO_RENEWAL",
+     "EXPLICIT", ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]),
+    ("arb", tos(ARB, "All claims are resolved by binding arbitration.",
+                "You waive your right to a jury trial."),
+     "MANDATORY_ARBITRATION", "EXPLICIT", ["RED_FLAG", "CLEAN",
+                                           "INCONCLUSIVE"]),
+    ("change", tos(CHANGE, "We may modify these terms without notice.",
+                   "Changes to these terms are effective immediately upon "
+                   "posting."), "UNILATERAL_CHANGE", "EXPLICIT",
      ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]),
-    ("license", tos(LICENSE), "CONTENT_OWNERSHIP", "EXPLICIT",
+    ("terminate", tos(TERMINATE, "We may suspend any account at our sole "
+                      "discretion.", "We can terminate access without "
+                      "cause."), "ACCOUNT_TERMINATION", "EXPLICIT",
      ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]),
-    ("renew", tos(RENEW), "AUTO_RENEWAL", "EXPLICIT",
-     ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]),
-    ("arb", tos(ARB), "MANDATORY_ARBITRATION", "EXPLICIT",
-     ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]),
-    ("change", tos(CHANGE), "UNILATERAL_CHANGE", "EXPLICIT",
-     ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]),
-    ("terminate", tos(TERMINATE), "ACCOUNT_TERMINATION", "EXPLICIT",
-     ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]),
-    ("liable", tos(LIABLE), "LIABILITY_WAIVER", "EXPLICIT",
-     ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]),
-    ("other_flag_absent", tos(SALE), "AUTO_RENEWAL", "ABSENT", ["CLEAN"]),
+    ("liable", tos(LIABLE, "We are not liable for lost data.",
+                   "The service is provided as is and without warranty."),
+     "LIABILITY_WAIVER", "EXPLICIT", ["RED_FLAG", "CLEAN", "INCONCLUSIVE"]),
+    ("other_flag_absent", tos(*RED3), "AUTO_RENEWAL", "ABSENT", ["CLEAN"]),
     ("not_tos_with_clause", "We may sell your personal data. " * 40,
      "DATA_SALE", "NOT_TOS", ["INCONCLUSIVE"]),
 ]
@@ -1343,10 +1373,59 @@ class TestBracketRules(unittest.TestCase):
                     self.assertEqual(br["clarity"][o], (0, 0))
                     self.assertEqual(br["scope"][o], (0, 0))
 
-    def test_red_flag_needs_explicit_or_three_topical(self):
+    def test_red_flag_needs_an_explicit_clause_past_the_gate(self):
         for name, br in _all_brackets():
             if "RED_FLAG" in br["allowed"]:
-                self.assertIn(br["case"], ("EXPLICIT", "MENTIONED"), name)
+                self.assertEqual(br["case"], "EXPLICIT", name)
+                self.assertGreaterEqual(br["strength"],
+                                        P.MIN_KEYWORD_STRENGTH, name)
+                self.assertTrue(br["analysis"]["explicit"], name)
+
+    def test_gate_tiers(self):
+        """0 topical -> CLEAN, strength 0-2 -> INCONCLUSIVE, 3+ -> model."""
+        rows = [((), "ABSENT", ["CLEAN"], True),
+                (("Our affiliates help us.",), "WEAK", ["INCONCLUSIVE"], True),
+                ((SALE,), "WEAK", ["INCONCLUSIVE"], True),
+                ((SALE, SALE2), "WEAK", ["INCONCLUSIVE"], True),
+                ((SALE, SALE2, SALE3), "EXPLICIT",
+                 ["RED_FLAG", "CLEAN", "INCONCLUSIVE"], False)]
+        for clauses, case, allowed, pinned in rows:
+            br = br_of(tos(*clauses))
+            self.assertEqual((br["case"], br["allowed"], br["pinned"]),
+                             (case, allowed, pinned), repr(clauses))
+
+    def test_gate_counts_denials_as_signal(self):
+        br = br_of(tos(SALE, NO_SALE, NO_SALE3))
+        self.assertEqual(br["strength"], 3)
+        self.assertFalse(br["pinned"])
+
+    def test_topical_mentions_are_not_signal(self):
+        many = ["Partner program " + str(i) + " is described in the help "
+                "pages." for i in range(40)]
+        br = br_of(tos(*many))
+        self.assertEqual(br["strength"], 0)
+        self.assertEqual(br["case"], "WEAK")
+
+    def test_weak_never_calls_model(self):
+        fresh()
+        WEB.serve(URL, tos(SALE, SALE2))
+        out = P._collect(facts())
+        self.assertEqual(out["outcome"], "INCONCLUSIVE")
+        self.assertEqual(out["case"], "WEAK")
+        self.assertFalse(out["model_called"])
+        self.assertEqual(MODEL.calls, 0)
+
+    def test_weak_is_identical_on_every_run(self):
+        page = tos(NO_SALE, *["Partner " + str(i) + " exists." for i in
+                              range(30)])
+        outs = set()
+        for _ in range(5):
+            fresh()
+            WEB.serve(URL, page)
+            MODEL.serve("RED_FLAG", 5, 5)   # would say anything; never asked
+            outs.add(P._collect(facts())["findings_key"])
+        self.assertEqual(len(outs), 1)
+        self.assertEqual(MODEL.calls, 0)
 
     def test_zero_matches_never_allow_red(self):
         for f in P.FLAG_KEYS:
@@ -1380,13 +1459,15 @@ class TestBracketRules(unittest.TestCase):
         self.assertEqual(broad["severity_red"], 7)
 
     def test_caps_raise_clarity(self):
-        a = br_of(tos("We are not liable for damages."), "LIABILITY_WAIVER")
-        b = br_of(tos(LIABLE), "LIABILITY_WAIVER")
+        plain = ("We are not liable for damages.", "We are not liable for "
+                 "lost data.", "We are not responsible for any loss.")
+        a = br_of(tos(*plain), "LIABILITY_WAIVER")
+        b = br_of(tos(LIABLE, *plain[1:]), "LIABILITY_WAIVER")
         self.assertGreater(b["clarity"]["RED_FLAG"][0],
                            a["clarity"]["RED_FLAG"][0])
 
     def test_range_csv_describes_every_outcome(self):
-        br = br_of(tos(SALE))
+        br = br_of(tos(*RED3))
         csv = P._range_csv(br)
         for o in br["allowed"]:
             self.assertIn(o + ":c", csv)
@@ -1400,11 +1481,11 @@ class TestBracketRules(unittest.TestCase):
 class TestDerive(unittest.TestCase):
     def setUp(self):
         self.f = facts()
-        self.ev = ev_of(tos(SALE))
+        self.ev = ev_of(tos(*RED3))
         self.br = P._bracket("DATA_SALE", self.ev)
 
     def test_outcome_outside_bracket_becomes_inconclusive(self):
-        ev = ev_of(tos(NO_SALE))
+        ev = ev_of(tos(*DENY3))
         d = P._derive(self.f, ev, "RED_FLAG", 5, 5)
         self.assertEqual(d["outcome"], "INCONCLUSIVE")
 
@@ -1432,25 +1513,33 @@ class TestDerive(unittest.TestCase):
                          ["evidence_present"])
 
     def test_quote_for_red_is_explicit_clause(self):
-        d = P._derive(self.f, ev_of(tos(SALE, NO_SALE)), "RED_FLAG", 3, 2)
-        self.assertEqual(d["quote"], P._norm(SALE))
+        d = P._derive(self.f, ev_of(tos(SALE, SALE2, SALE3, NO_SALE)),
+                      "RED_FLAG", 3, 2)
+        self.assertIn(d["quote"], [P._norm(x) for x in RED3])
         self.assertTrue(len(d["quote"]) <= P.MAX_QUOTE)
 
     def test_quote_prefers_the_clause_over_its_heading(self):
         d = P._derive(facts(flag="MANDATORY_ARBITRATION"),
-                      ev_of(tos("Class action waiver.", ARB),
+                      ev_of(tos("Class action waiver.", ARB,
+                                "You agree to binding arbitration."),
                             "MANDATORY_ARBITRATION"), "RED_FLAG", 9, 9)
         self.assertEqual(d["quote"], P._norm(ARB))
 
     def test_reason_grammar(self):
-        one = P._derive(self.f, ev_of(tos(SALE)), "RED_FLAG", 3, 2)["reason"]
-        two = P._derive(self.f, ev_of(tos(SALE, SALE2)), "RED_FLAG", 3, 2)
+        one = P._derive(self.f, ev_of(tos(SALE, NO_SALE, NO_SALE3)),
+                        "RED_FLAG", 3, 2)["reason"]
+        two = P._derive(self.f, ev_of(tos(SALE, SALE2, NO_SALE)), "RED_FLAG",
+                        3, 2)
         self.assertIn("1 clause states", one)
         self.assertIn("2 clauses state", two["reason"])
 
+    def test_weak_reason_names_the_gate(self):
+        r = P._derive(self.f, ev_of(tos(SALE)), "RED_FLAG", 0, 0)["reason"]
+        self.assertIn("only 1 state or deny it explicitly (3 needed", r)
+
     def test_quote_for_clean_is_denial(self):
-        d = P._derive(self.f, ev_of(tos(NO_SALE)), "CLEAN", 2, 0)
-        self.assertEqual(d["quote"], P._norm(NO_SALE))
+        d = P._derive(self.f, ev_of(tos(*DENY3)), "CLEAN", 2, 0)
+        self.assertEqual(d["quote"], sorted(P._norm(x) for x in DENY3)[0])
 
     def test_no_quote_for_inconclusive(self):
         self.assertEqual(P._derive(self.f, self.ev, "INCONCLUSIVE", 1, 0)
@@ -1503,7 +1592,7 @@ class TestDerive(unittest.TestCase):
 
 class TestPrompt(unittest.TestCase):
     def setUp(self):
-        self.ev = ev_of(tos(SALE, NO_SALE))
+        self.ev = ev_of(tos(SALE, SALE2, SALE3, NO_SALE))
         self.br = P._bracket("DATA_SALE", self.ev)
         self.p = P._prompt(facts(concern="Will they sell my phone number?"),
                            self.br, self.ev)
@@ -1517,8 +1606,8 @@ class TestPrompt(unittest.TestCase):
                            self.p.find("CLAUSES\n\n"))
 
     def test_lists_only_allowed_outcomes(self):
-        br = P._bracket("DATA_SALE", ev_of(tos(NO_SALE)))
-        p = P._prompt(facts(), br, ev_of(tos(NO_SALE)))
+        br = P._bracket("DATA_SALE", ev_of(tos(*DENY3)))
+        p = P._prompt(facts(), br, ev_of(tos(*DENY3)))
         self.assertNotIn("  - RED_FLAG", p)
         self.assertIn("  - CLEAN", p)
 
@@ -1535,7 +1624,7 @@ class TestPrompt(unittest.TestCase):
 
 class TestModelAnswer(unittest.TestCase):
     def setUp(self):
-        self.br = br_of(tos(SALE))
+        self.br = br_of(tos(*RED3))
         self.c = self.br["clarity"]["RED_FLAG"][0]
         self.s = self.br["scope"]["RED_FLAG"][0]
 
@@ -1577,7 +1666,7 @@ class TestModelAnswer(unittest.TestCase):
         self.assertFalse(self.a(outcome=1, clarity_bucket=1, scope_bucket=0)[3])
 
     def test_outcome_outside_bracket(self):
-        br = br_of(tos(NO_SALE))
+        br = br_of(tos(*DENY3))
         self.assertFalse(P._from_json({"outcome": "RED_FLAG",
                                        "clarity_bucket": 3,
                                        "scope_bucket": 2}, br)[3])
@@ -1619,8 +1708,8 @@ class TestCollect(unittest.TestCase):
         self.assertEqual(MODEL.calls, 0)
 
     def test_open_case_asks_model(self):
-        WEB.serve(URL, tos(SALE))
-        br = br_of(tos(SALE))
+        WEB.serve(URL, tos(*RED3))
+        br = br_of(tos(*RED3))
         MODEL.serve("RED_FLAG", br["clarity"]["RED_FLAG"][0],
                     br["scope"]["RED_FLAG"][0])
         out = P._collect(facts())
@@ -1634,7 +1723,7 @@ class TestCollect(unittest.TestCase):
         self.assertEqual(WEB.calls[0], (URL, "text"))
 
     def test_model_error_is_retry(self):
-        WEB.serve(URL, tos(SALE))
+        WEB.serve(URL, tos(*RED3))
         MODEL.fail()
         out = P._collect(facts())
         self.assertFalse(out["ok"])
@@ -1642,7 +1731,7 @@ class TestCollect(unittest.TestCase):
         self.assertIn("content_hash", out)
 
     def test_model_bad_answer_is_retry(self):
-        WEB.serve(URL, tos(SALE))
+        WEB.serve(URL, tos(*RED3))
         MODEL.serve("PERHAPS", 1, 1)
         self.assertTrue(P._collect(facts())["retry"])
 
@@ -1680,7 +1769,7 @@ class TestCoherent(unittest.TestCase):
     def setUp(self):
         fresh()
         self.f = facts()
-        self.page = tos(SALE, NO_SALE)
+        self.page = tos(SALE, SALE2, SALE3, NO_SALE)
         br = br_of(self.page)
         self.good = honest(self.f, self.page, "RED_FLAG",
                            br["clarity"]["RED_FLAG"][0],
@@ -1722,7 +1811,7 @@ class TestCoherent(unittest.TestCase):
         # excerpt passes _coherent (it is arithmetic) - and is then caught by
         # _agrees, because the content hash no longer matches what the
         # validator read.
-        forged_page = tos(SALE, "We share your personal data with everyone.")
+        forged_page = tos(SALE, SALE2, SALE3, "We share your personal data with everyone.")
         br = br_of(forged_page)
         forged = honest(self.f, forged_page, "RED_FLAG",
                         br["clarity"]["RED_FLAG"][0],
@@ -1752,7 +1841,7 @@ AGREE_FIELDS = list(P.VECTOR_STRS) + list(P.VECTOR_INTS) + list(P.VECTOR_BOOLS)
 class TestAgrees(unittest.TestCase):
     def setUp(self):
         self.f = facts()
-        self.page = tos(SALE, NO_SALE)
+        self.page = tos(SALE, SALE2, SALE3, NO_SALE)
         self.br = br_of(self.page)
         self.lo_c, self.hi_c = self.br["clarity"]["RED_FLAG"]
         self.lo_s, self.hi_s = self.br["scope"]["RED_FLAG"]
@@ -1796,12 +1885,12 @@ class TestAgrees(unittest.TestCase):
         self.assertFalse(P._agrees(None, self.a))
 
     def test_page_edited_between_fetches(self):
-        other = honest(self.f, tos(SALE, NO_SALE, SALE2), "RED_FLAG",
+        other = honest(self.f, tos(SALE, SALE2, SALE3, NO_SALE, NO_SALE3), "RED_FLAG",
                        self.lo_c, self.lo_s)
         self.assertFalse(P._agrees(self.a, other))
 
     def test_shuffled_render_still_agrees(self):
-        b = honest(self.f, tos(NO_SALE, SALE, pad=77), "RED_FLAG", self.lo_c,
+        b = honest(self.f, tos(NO_SALE, SALE3, SALE2, SALE, pad=77), "RED_FLAG", self.lo_c,
                    self.lo_s)
         self.assertTrue(P._agrees(self.a, b))
 
@@ -1829,8 +1918,8 @@ class TestLeaderFailed(unittest.TestCase):
     def setUp(self):
         fresh()
         self.f = facts()
-        WEB.serve(URL, tos(SALE))
-        self.ch = P._content_hash(URL, "DATA_SALE", ev_of(tos(SALE))["excerpt"])
+        WEB.serve(URL, tos(*RED3))
+        self.ch = P._content_hash(URL, "DATA_SALE", ev_of(tos(*RED3))["excerpt"])
 
     def payload(self, **k):
         d = {"ok": False, "retry": True, "why": "down",
@@ -1843,7 +1932,7 @@ class TestLeaderFailed(unittest.TestCase):
         self.assertTrue(P._leader_failed(self.payload(), self.f))
 
     def test_refuse_when_my_model_answers(self):
-        br = br_of(tos(SALE))
+        br = br_of(tos(*RED3))
         MODEL.serve("RED_FLAG", br["clarity"]["RED_FLAG"][0],
                     br["scope"]["RED_FLAG"][0])
         self.assertFalse(P._leader_failed(self.payload(), self.f))
@@ -2059,7 +2148,7 @@ class TestJudge(unittest.TestCase):
                 br["scope"]["RED_FLAG"][0])
 
     def test_red_flag_judgment(self):
-        page = tos(SALE, NO_SALE)
+        page = tos(SALE, SALE2, SALE3, NO_SALE)
         out = judge(self.c, 1, page=page, answer=self.red(page))
         self.assertTrue(out["judged"], out)
         self.assertEqual(out["outcome"], "RED_FLAG")
@@ -2067,7 +2156,7 @@ class TestJudge(unittest.TestCase):
         self.assertEqual(ck["status"], "JUDGED")
         self.assertEqual(ck["severity_bucket"], 6)
         self.assertTrue(ck["evidence_present"])
-        self.assertEqual(ck["quote"], P._norm(SALE))
+        self.assertIn(ck["quote"], [P._norm(x) for x in RED3])
         self.assertEqual(ck["content_hash"], P._content_hash(
             URL, "DATA_SALE", ev_of(page)["excerpt"]))
         self.assertEqual(int(self.c.total_judgments), 1)
@@ -2090,7 +2179,7 @@ class TestJudge(unittest.TestCase):
         self.assertEqual(out["outcome"], "INCONCLUSIVE")
 
     def test_clean_by_denial(self):
-        page = tos(NO_SALE)
+        page = tos(*DENY3)
         br = br_of(page)
         out = judge(self.c, 1, page=page,
                     answer=("CLEAN", br["clarity"]["CLEAN"][0], 0))
@@ -2098,7 +2187,7 @@ class TestJudge(unittest.TestCase):
         self.assertEqual(self.c.get_check(1)["severity_bucket"], 0)
 
     def test_model_disagreement_settles_nothing(self):
-        page = tos(SALE)
+        page = tos(*RED3)
         WEB.serve(URL, page)
         br = br_of(page)
         MODEL.script(("RED_FLAG", br["clarity"]["RED_FLAG"][0],
@@ -2114,13 +2203,13 @@ class TestJudge(unittest.TestCase):
         self.assertEqual(int(self.c.total_unsettled), 1)
 
     def test_page_changed_between_fetches_settles_nothing(self):
-        WEB.script(URL, tos(pad=100), tos(SALE))
-        MODEL.serve(*self.red(tos(SALE)))
+        WEB.script(URL, tos(pad=100), tos(*RED3))
+        MODEL.serve(*self.red(tos(*RED3)))
         out = send(self.c, STRANGER, "judge_check", 1)
         self.assertFalse(out["judged"])
 
     def test_forged_leader_refused(self):
-        page = tos(NO_SALE)
+        page = tos(*DENY3)
         WEB.serve(URL, page)
         br = br_of(page)
         MODEL.serve("CLEAN", br["clarity"]["CLEAN"][0], 0)
@@ -2138,7 +2227,7 @@ class TestJudge(unittest.TestCase):
         self.assertEqual(self.c.get_check(1)["status"], "PENDING")
 
     def test_both_models_down_settles_nothing(self):
-        WEB.serve(URL, tos(SALE))
+        WEB.serve(URL, tos(*RED3))
         MODEL.fail(2)
         out = send(self.c, STRANGER, "judge_check", 1)
         self.assertFalse(out["judged"])
@@ -2154,7 +2243,7 @@ class TestJudge(unittest.TestCase):
     def test_judged_is_frozen(self):
         judge(self.c, 1, page=tos(pad=100))
         before = self.c.get_check(1)
-        out = judge(self.c, 1, page=tos(SALE), answer=self.red(tos(SALE)))
+        out = judge(self.c, 1, page=tos(*RED3), answer=self.red(tos(*RED3)))
         self.assertTrue(rejected(out))
         self.assertEqual(self.c.get_check(1), before)
 
@@ -2171,7 +2260,7 @@ class TestJudge(unittest.TestCase):
         self.assertEqual(int(self.c.pending.get("DATA_SALE|" + URL) or 0), 0)
 
     def test_stored_record_is_rederived(self):
-        page = tos(SALE)
+        page = tos(*RED3)
         WEB.serve(URL, page)
         MODEL.serve(*self.red(page))
         send(self.c, STRANGER, "judge_check", 1)
@@ -2181,12 +2270,12 @@ class TestJudge(unittest.TestCase):
     def test_concern_reaches_prompt(self):
         c = fresh()
         submit(c, concern="Do they sell my location history to brokers?")
-        page = tos(SALE)
+        page = tos(*RED3)
         judge(c, 1, page=page, answer=self.red(page))
         self.assertIn("location history", MODEL.log[0])
 
     def test_findings_key_stored(self):
-        page = tos(SALE)
+        page = tos(*RED3)
         out = judge(self.c, 1, page=page, answer=self.red(page))
         self.assertTrue(out["findings_key"].startswith("RED_FLAG|"))
 
@@ -2255,7 +2344,7 @@ class TestStats(unittest.TestCase):
 
     def test_counts_and_flagged_urls(self):
         submit(self.c)
-        self.red_judge(1, tos(SALE))
+        self.red_judge(1, tos(*RED3))
         submit(self.c, url=URL2)
         judge(self.c, 2, page=tos(pad=100), url=URL2)
         s = self.c.get_flag_stats("DATA_SALE")
@@ -2267,7 +2356,7 @@ class TestStats(unittest.TestCase):
 
     def test_later_clean_unflags(self):
         submit(self.c)
-        self.red_judge(1, tos(SALE))
+        self.red_judge(1, tos(*RED3))
         submit(self.c)
         judge(self.c, 2, page=tos(pad=100))
         s = self.c.get_flag_stats("DATA_SALE")
@@ -2278,7 +2367,7 @@ class TestStats(unittest.TestCase):
     def test_repeat_red_counts_url_once(self):
         for cid in (1, 2):
             submit(self.c)
-            self.red_judge(cid, tos(SALE))
+            self.red_judge(cid, tos(*RED3))
         self.assertEqual(self.c.get_flag_stats("DATA_SALE")["urls_flagged"], 1)
 
     def test_unknown_flag(self):
@@ -2288,7 +2377,7 @@ class TestStats(unittest.TestCase):
         submit(self.c)
         send(self.c, ALICE, "batch_check", URL, ["AUTO_RENEWAL",
                                                  "LIABILITY_WAIVER"])
-        self.red_judge(1, tos(SALE))
+        self.red_judge(1, tos(*RED3))
         r = self.c.get_url_report("https://EXAMPLE-service.com/terms#top")
         self.assertTrue(r["found"])
         self.assertEqual(r["total_checks"], 3)
@@ -2342,7 +2431,7 @@ class TestStats(unittest.TestCase):
                          ["clarity_bucket", "scope_bucket"])
 
     def test_preview_bracket(self):
-        p = self.c.preview_bracket("DATA_SALE", tos(SALE))
+        p = self.c.preview_bracket("DATA_SALE", tos(*RED3))
         self.assertEqual(p["case"], "EXPLICIT")
         self.assertIn("RED_FLAG", p["allowed"])
         self.assertFalse(self.c.preview_bracket("X", "y")["ok"])
@@ -2352,7 +2441,7 @@ class TestVerify(unittest.TestCase):
     def setUp(self):
         self.c = fresh()
         submit(self.c)
-        page = tos(SALE, LIABLE)
+        page = tos(SALE, SALE2, SALE3, LIABLE)
         br = br_of(page)
         judge(self.c, 1, page=page,
               answer=("RED_FLAG", br["clarity"]["RED_FLAG"][1],
@@ -2369,7 +2458,7 @@ class TestVerify(unittest.TestCase):
                              ("excerpt", "we sell nothing.")):
             c = fresh()
             submit(c)
-            page = tos(SALE)
+            page = tos(*RED3)
             br = br_of(page)
             judge(c, 1, page=page, answer=("RED_FLAG",
                                            br["clarity"]["RED_FLAG"][0],
@@ -2479,12 +2568,16 @@ class TestOwner(unittest.TestCase):
 
 REAL = [
     # (fixture, flag, the case the scan lands in on the captured render)
-    ("twitter_tos.txt", "DATA_SALE", ("MENTIONED",)),
+    # The three pages that flipped between the first two seed runs: all now
+    # below the gate, so INCONCLUSIVE with no model call.
+    ("twitter_tos.txt", "DATA_SALE", ("WEAK",)),
     ("twitter_tos.txt", "CONTENT_OWNERSHIP", ("EXPLICIT",)),
     ("twitter_tos.txt", "MANDATORY_ARBITRATION", ("EXPLICIT",)),
     ("twitter_tos.txt", "LIABILITY_WAIVER", ("EXPLICIT",)),
-    ("duckduckgo_terms.txt", "DATA_SALE", ("MENTIONED",)),
-    ("wikipedia_terms.txt", "ACCOUNT_TERMINATION", ("EXPLICIT",)),
+    ("duckduckgo_terms.txt", "DATA_SALE", ("WEAK",)),
+    ("wikipedia_terms.txt", "ACCOUNT_TERMINATION", ("WEAK",)),
+    ("duckduckgo_terms.txt", "AUTO_RENEWAL", ("WEAK",)),
+    ("duckduckgo_terms.txt", "MANDATORY_ARBITRATION", ("ABSENT",)),
     ("example_com.txt", "DATA_SALE", ("UNREADABLE",)),
 ]
 

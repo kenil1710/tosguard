@@ -77,10 +77,16 @@ import typing
 #      call. Validators must AGREE it was unreadable, so a leader cannot fake
 #      an outage.
 #
-#   7. THE OUTCOME IS BOUNDED BY EVIDENCE BEFORE A MODEL IS ASKED. A page that
-#      never mentions the flag's topic can only be CLEAN (a full-length legal
-#      document) or INCONCLUSIVE (a short one). RED_FLAG is only reachable when
-#      the scan found an explicit clause or at least three topical ones.
+#   7. THE CONFIDENCE GATE: NO MODEL ON WEAK EVIDENCE. Before a model is asked,
+#      the scan counts KEYWORD STRENGTH - the clauses that explicitly state
+#      the practice or explicitly deny it. Passing topical mentions ("our
+#      partners", "third-party software") do not count.
+#        no topical clause at all      -> CLEAN, no model call
+#        strength 0, 1 or 2            -> INCONCLUSIVE, no model call
+#        strength 3 or more            -> the model judges inside the bracket
+#      Borderline evidence therefore always yields the same answer: the
+#      measured flips (same content hash, different outcome on a re-run) were
+#      all on pages with 0 or 1 signal clauses.
 #
 #   8. MUTABLE PAGES, CANONICAL TEXT. TOS pages change and render with noise.
 #      Only the clauses that match the flag are hashed, each normalised
@@ -98,7 +104,7 @@ import typing
 #
 # str.replace() is rejected by the runner; slice around find() instead.
 
-RUBRIC_VERSION = "1.0.0"
+RUBRIC_VERSION = "1.1.0"
 
 # --- the scale -----------------------------------------------------------------
 TOP_BUCKET = 7
@@ -126,7 +132,7 @@ MAX_REASON = 600
 MAX_LIST = 50
 MAX_BATCH = 7
 MIN_LEGAL_MARKERS = 4
-ABSENT_CLEAN_MIN_LENGTH_BUCKET = 3   # a document >= 6,000 chars that never mentions it
+MIN_KEYWORD_STRENGTH = 3   # signal clauses needed before a model is asked
 
 # --- statuses. JUDGED and STALLED are terminal.
 S_PENDING = "PENDING"
@@ -150,13 +156,12 @@ PAGE_STATES = (PAGE_OK, PAGE_UNREADABLE)
 CASE_UNREADABLE = "UNREADABLE"   # would not render, or too short to be terms
 CASE_NOT_TOS = "NOT_TOS"         # rendered, but not a legal document
 CASE_ABSENT = "ABSENT"           # a legal document that never mentions the topic
-CASE_SPARSE = "SPARSE"           # one or two passing mentions
-CASE_DENIED = "DENIED"           # a denial, and fewer than three other topical clauses
-CASE_MENTIONED = "MENTIONED"     # three or more topical clauses, none explicit
-CASE_EXPLICIT = "EXPLICIT"       # at least one clause states the practice
-CASES = (CASE_UNREADABLE, CASE_NOT_TOS, CASE_ABSENT, CASE_SPARSE,
-         CASE_DENIED, CASE_MENTIONED, CASE_EXPLICIT)
-PINNED_CASES = (CASE_UNREADABLE, CASE_NOT_TOS, CASE_ABSENT)
+CASE_WEAK = "WEAK"               # topical, but keyword strength below the gate
+CASE_DENIED = "DENIED"           # strength >= gate, all of it denials
+CASE_EXPLICIT = "EXPLICIT"       # strength >= gate, at least one explicit clause
+CASES = (CASE_UNREADABLE, CASE_NOT_TOS, CASE_ABSENT, CASE_WEAK,
+         CASE_DENIED, CASE_EXPLICIT)
+PINNED_CASES = (CASE_UNREADABLE, CASE_NOT_TOS, CASE_ABSENT, CASE_WEAK)
 
 # Page-length buckets over the NORMALISED full text, in characters.
 LENGTH_LADDER = (1000, 3000, 6000, 12000, 25000, 50000, 100000)
@@ -824,7 +829,14 @@ def _analyse(flag_key: str, ev: dict) -> dict:
             "broad": broad}
 
 
+def _strength(an: dict) -> int:
+    """KEYWORD STRENGTH: the clauses that explicitly state the practice plus
+    those that explicitly deny it. Topical mentions are not signal."""
+    return len(an["explicit"]) + len(an["denied"])
+
+
 def _case(ev: dict, an: dict) -> str:
+    """Rule 7, the confidence gate, in one place."""
     if str(ev.get("page_state")) != PAGE_OK:
         return CASE_UNREADABLE
     if _as_int(ev.get("legal_count"), 0) < MIN_LEGAL_MARKERS:
@@ -833,17 +845,11 @@ def _case(ev: dict, an: dict) -> str:
     if total <= 0 or (not an["explicit"] and not an["denied"]
                       and not an["topical"]):
         return CASE_ABSENT
+    if _strength(an) < MIN_KEYWORD_STRENGTH:
+        return CASE_WEAK
     if an["explicit"]:
         return CASE_EXPLICIT
-    # Three or more topical clauses outrank a denial: "we do not disclose
-    # personal information except in accordance with our privacy policy"
-    # beside thirty clauses about partners and advertising is a qualified
-    # denial, and weighing it is the model's job, not the scan's.
-    if len(an["topical"]) >= 3:
-        return CASE_MENTIONED
-    if an["denied"]:
-        return CASE_DENIED
-    return CASE_SPARSE
+    return CASE_DENIED
 
 
 def _bracket(flag_key: str, ev: dict) -> dict:
@@ -859,18 +865,16 @@ def _bracket(flag_key: str, ev: dict) -> dict:
     case = _case(ev, an)
     total = _as_int(ev.get("matched_total"), 0)
     caps = _as_int(ev.get("caps_count"), 0)
-    lb = _as_int(ev.get("length_bucket"), 0)
-    if case in (CASE_UNREADABLE, CASE_NOT_TOS):
+    if case == CASE_ABSENT:
+        allowed = [O_CLEAN]
+    elif case in PINNED_CASES:
         allowed = [O_INCONCLUSIVE]
-    elif case == CASE_ABSENT:
-        allowed = [O_CLEAN] if lb >= ABSENT_CLEAN_MIN_LENGTH_BUCKET \
-            else [O_INCONCLUSIVE]
-    elif case in (CASE_SPARSE, CASE_DENIED):
+    elif case == CASE_DENIED:
         allowed = [O_CLEAN, O_INCONCLUSIVE]
     else:
         allowed = [O_RED, O_CLEAN, O_INCONCLUSIVE]
     pinned = case in PINNED_CASES
-    signals = len(an["explicit"]) + len(an["denied"])
+    signals = _strength(an)
     clo = _clamp(1 + (3 if signals > 3 else signals) + (1 if caps > 0 else 0)
                  + (1 if total >= 6 else 0), 1, 6)
     slo = _clamp(1 + _rank(total, (3, 6, 12)) + (1 if an["broad"] > 0 else 0),
@@ -892,6 +896,7 @@ def _bracket(flag_key: str, ev: dict) -> dict:
             scope[o] = (slo, slo + 1)
     base = flag[3] if flag is not None else 0
     return {"case": case, "allowed": allowed, "pinned": pinned,
+            "strength": signals,
             "allowed_csv": ",".join(allowed), "clarity": clarity,
             "scope": scope, "analysis": an,
             "severity_red": _clamp(base + (1 if an["broad"] > 0 else 0),
@@ -989,18 +994,15 @@ def _reason(flag_key: str, br: dict, outcome: str, ev: dict) -> str:
                 + str(len(LEGAL_MARKERS)) + " legal markers).")
     elif case == CASE_ABSENT:
         head = ("The terms never mention the topic of '" + label + "'.")
-        if outcome == O_INCONCLUSIVE:
-            head += " The document is short, so it may be incomplete."
-    elif case == CASE_SPARSE:
-        head = ("The terms mention the topic only in passing (" + str(total)
-                + " clause" + ("" if total == 1 else "s") + ").")
+    elif case == CASE_WEAK:
+        st = br["strength"]
+        head = (str(total) + " clause" + ("" if total == 1 else "s")
+                + " touch the topic but only " + str(st) + " state or deny "
+                "it explicitly (" + str(MIN_KEYWORD_STRENGTH) + " needed for "
+                "a reading); too little signal to judge.")
     elif case == CASE_DENIED:
         head = ("The relevant clauses deny the practice ("
-                + str(len(an["denied"])) + " denial clause"
-                + ("" if len(an["denied"]) == 1 else "s") + ").")
-    elif case == CASE_MENTIONED:
-        head = (str(total) + " clauses address the topic, none in the "
-                "explicit wording the scan looks for.")
+                + str(len(an["denied"])) + " denial clauses).")
     else:
         head = (str(len(an["explicit"]))
                 + (" clause states" if len(an["explicit"]) == 1
@@ -1073,6 +1075,7 @@ def _derive(facts: dict, ev: typing.Any, outcome: typing.Any,
         "clarity_bucket": c,
         "scope_bucket": s,
         "evidence_present": clean_ev["matched_total"] > 0,
+        "keyword_strength": br["strength"],
         "explicit_count": len(br["analysis"]["explicit"]),
         "denied_count": len(br["analysis"]["denied"]),
         "broad_count": br["analysis"]["broad"],
@@ -1229,7 +1232,8 @@ def _ok(d: dict) -> dict:
 
 # The FINDINGS VECTOR. Every one compared exactly except the two tolerated.
 VECTOR_INTS = ("check_id", "page_length_bucket", "legal_count", "caps_count",
-               "matched_total", "severity_bucket", "explicit_count",
+               "matched_total", "keyword_strength", "severity_bucket",
+               "explicit_count",
                "denied_count", "broad_count")
 VECTOR_STRS = ("flag_type", "page_state", "case", "allowed_csv", "range_csv",
                "outcome", "facts_hash", "content_hash")
@@ -1407,6 +1411,7 @@ class Check:
     legal_count: u32
     caps_count: u32
     matched_total: u32
+    keyword_strength: u32
     explicit_count: u32
     denied_count: u32
     broad_count: u32
@@ -1623,6 +1628,7 @@ class TOSGuard(gl.contract.Contract):
         ck.legal_count = u32(_as_int(d["legal_count"], 0))
         ck.caps_count = u32(_as_int(d["caps_count"], 0))
         ck.matched_total = u32(_as_int(d["matched_total"], 0))
+        ck.keyword_strength = u32(_as_int(d["keyword_strength"], 0))
         ck.explicit_count = u32(_as_int(d["explicit_count"], 0))
         ck.denied_count = u32(_as_int(d["denied_count"], 0))
         ck.broad_count = u32(_as_int(d["broad_count"], 0))
@@ -1882,6 +1888,7 @@ class TOSGuard(gl.contract.Contract):
                 "legal_count": int(ck.legal_count),
                 "caps_count": int(ck.caps_count),
                 "matched_total": int(ck.matched_total),
+                "keyword_strength": int(ck.keyword_strength),
                 "explicit_count": int(ck.explicit_count),
                 "denied_count": int(ck.denied_count),
                 "broad_count": int(ck.broad_count),
@@ -2002,6 +2009,8 @@ class TOSGuard(gl.contract.Contract):
                 "length_bucket": ev["length_bucket"],
                 "legal_count": ev["legal_count"],
                 "matched_total": ev["matched_total"],
+                "keyword_strength": br["strength"],
+                "model_called": not br["pinned"],
                 "explicit": len(br["analysis"]["explicit"]),
                 "denied": len(br["analysis"]["denied"]),
                 "severity_if_red": br["severity_red"],
@@ -2043,6 +2052,8 @@ class TOSGuard(gl.contract.Contract):
         note("scope_bucket", int(ck.scope_bucket), d["scope_bucket"])
         note("evidence_present", bool(ck.evidence_present),
              d["evidence_present"])
+        note("keyword_strength", int(ck.keyword_strength),
+             d["keyword_strength"])
         note("explicit_count", int(ck.explicit_count), d["explicit_count"])
         note("denied_count", int(ck.denied_count), d["denied_count"])
         note("broad_count", int(ck.broad_count), d["broad_count"])
@@ -2122,13 +2133,15 @@ class TOSGuard(gl.contract.Contract):
                 CASE_UNREADABLE: "INCONCLUSIVE, no model call",
                 CASE_NOT_TOS: "INCONCLUSIVE, no model call (fewer than "
                               + str(MIN_LEGAL_MARKERS) + " legal markers)",
-                CASE_ABSENT: "CLEAN if the document is 6,000+ chars, else "
-                             "INCONCLUSIVE; no model call",
-                CASE_SPARSE: "CLEAN or INCONCLUSIVE",
-                CASE_DENIED: "CLEAN or INCONCLUSIVE",
-                CASE_MENTIONED: "RED_FLAG, CLEAN or INCONCLUSIVE",
-                CASE_EXPLICIT: "RED_FLAG, CLEAN or INCONCLUSIVE",
+                CASE_ABSENT: "CLEAN, no model call (zero topical clauses)",
+                CASE_WEAK: "INCONCLUSIVE, no model call (keyword strength "
+                           "below " + str(MIN_KEYWORD_STRENGTH) + ")",
+                CASE_DENIED: "CLEAN or INCONCLUSIVE (strength >= "
+                             + str(MIN_KEYWORD_STRENGTH) + ", all denials)",
+                CASE_EXPLICIT: "RED_FLAG, CLEAN or INCONCLUSIVE (strength >= "
+                               + str(MIN_KEYWORD_STRENGTH) + ")",
             },
+            "min_keyword_strength": MIN_KEYWORD_STRENGTH,
             "compared_exactly": list(VECTOR_STRS) + list(VECTOR_INTS)
             + list(VECTOR_BOOLS),
             "compared_within_one": list(VECTOR_TOLERATED),

@@ -25,30 +25,54 @@ Severity is not asked of the model at all (`tools/audit.py` check 31). A
 consumer comparing "RED_FLAG sev 7" across two services is comparing the same
 arithmetic, not two moods.
 
-## 2. The bracket, and why silence is CLEAN only for a long document
+## 2. The bracket and the confidence gate
 
 | case | meaning | allowed |
 |---|---|---|
 | UNREADABLE | render failed, or < 500 normalised chars | INCONCLUSIVE (pinned, no model) |
 | NOT_TOS | fewer than 4 of 16 legal markers (login wall, block page, home page) | INCONCLUSIVE (pinned) |
-| ABSENT | a legal document with zero topical clauses | CLEAN if ≥ 6,000 chars, else INCONCLUSIVE (pinned) |
-| SPARSE | one or two topical clauses, nothing explicit | CLEAN / INCONCLUSIVE |
-| DENIED | a denial, and fewer than three other topical clauses | CLEAN / INCONCLUSIVE |
-| MENTIONED | three or more topical clauses, none explicit | RED_FLAG / CLEAN / INCONCLUSIVE |
-| EXPLICIT | at least one clause states the practice | RED_FLAG / CLEAN / INCONCLUSIVE |
+| ABSENT | a legal document with zero topical clauses | CLEAN (pinned) |
+| WEAK | topical clauses, but keyword strength 0–2 | INCONCLUSIVE (pinned) |
+| DENIED | keyword strength ≥ 3, all of it denials | CLEAN / INCONCLUSIVE |
+| EXPLICIT | keyword strength ≥ 3, at least one explicit clause | RED_FLAG / CLEAN / INCONCLUSIVE |
 
-A terms document that never uses any of a flag's topic words does not contain
-that clause, which is a finding; but a short page may be a truncated render of
-a longer document, so below the 6,000-character bucket silence is only
-INCONCLUSIVE.
+**Keyword strength** is the number of clauses that explicitly state the
+practice ("royalty-free license", "binding arbitration", "sell your personal
+information") plus the number that explicitly deny it ("we do not sell").
+Passing topical mentions — "our partners", "third-party software", an
+article's summary of other companies' terms — are not signal.
 
-MENTIONED outranks DENIED on purpose. Twitter/X's terms contain "we do not
-disclose personally-identifying information to third parties except in
-accordance with our privacy policy" beside thirty clauses about partners and
-advertising. The first version let that one qualified denial pin the outcome to
-CLEAN/INCONCLUSIVE — the scan deciding a legal question, which is exactly what
-the scan must not do. With three or more other topical clauses the model sees
-everything and weighs the denial itself.
+### Why the gate exists (v1.1.0)
+
+The first two seed runs judged the same pages twice. Every content hash
+matched, and three outcomes did not (docs/PROBE.md §6):
+
+| page · flag | matched clauses | keyword strength | run 1 | run 2 |
+|---|---|---|---|---|
+| X · DATA_SALE | 33 | 1 (one qualified denial) | CLEAN | INCONCLUSIVE |
+| DuckDuckGo · DATA_SALE | 7 | 0 | INCONCLUSIVE | CLEAN |
+| wikipedia.org article · ACCOUNT_TERMINATION | 5 | 1 | INCONCLUSIVE | RED_FLAG |
+| X · CONTENT_OWNERSHIP | 34 | 5 | RED_FLAG | RED_FLAG |
+| X · MANDATORY_ARBITRATION | 20 | 9 | RED_FLAG | RED_FLAG |
+
+A gate on RAW matches (1–2 → INCONCLUSIVE, 3+ → model) would not have touched
+any of the three flips: they had 33, 7 and 5 matches. What separates them from
+the stable pages is how many clauses actually *say* something — 0 or 1 against
+5 and 9. So the gate counts signal clauses, and below 3 the answer is
+INCONCLUSIVE with no model call: the same bytes always give the same answer,
+because no reader is consulted. Above it, the model reads a page that states
+its position several times over.
+
+The cost is deliberate. X's terms touch data sharing thirty times without
+saying "we sell your data"; DuckDuckGo's terms never state their no-sale
+promise (it is in the privacy policy). Both are now INCONCLUSIVE on every run,
+instead of CLEAN on some and INCONCLUSIVE on others. For a consumer, a stable
+"the terms don't settle it" is worth more than a coin flip.
+
+An ABSENT page (no topical clause at all) is CLEAN at any length. v1.0 made a
+short silent page INCONCLUSIVE in case the render was truncated; the brief for
+1.1.0 sets zero matches to CLEAN, and the 500-character floor and the
+legal-marker test still route error pages and login walls to INCONCLUSIVE.
 
 ## 3. Denials are cut clause-wide
 

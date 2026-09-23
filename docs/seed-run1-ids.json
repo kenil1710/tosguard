@@ -1,0 +1,11 @@
+{
+  "https://twitter.com/en/tos DATA_SALE": 1,
+  "https://www.reddit.com/policies/user-agreement CONTENT_OWNERSHIP": 2,
+  "https://duckduckgo.com/terms DATA_SALE": 3,
+  "https://www.wikipedia.org/wiki/Terms_of_Use ACCOUNT_TERMINATION": 4,
+  "https://example.com/ DATA_SALE": 5,
+  "https://twitter.com/en/tos CONTENT_OWNERSHIP": 6,
+  "https://twitter.com/en/tos MANDATORY_ARBITRATION": 7,
+  "https://duckduckgo.com/terms AUTO_RENEWAL": 8,
+  "https://duckduckgo.com/terms MANDATORY_ARBITRATION": 9
+}

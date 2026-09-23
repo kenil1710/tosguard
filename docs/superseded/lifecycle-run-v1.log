@@ -1,0 +1,36 @@
+lifecycle on DEMO 0x1AB66BBfEa8eB06fdfFDBD86571b62572C3Bb0A4  (2026-09-23T15:57:12.453Z)
+  ✔ http URL refused without reverting  ACCEPTED → the URL must start with https:// tx 0x3745b4f054d434b5abe3e052a8b64193a15d03669c5fe96c40a4ef5cbbd61b78
+  ✔ private host refused without reverting  ACCEPTED → an IP-address host is refused; use the public domain name tx 0x218d6880fb010056f89c11fe99dbbac6964958899582ae92d38b1fc7d9def025
+  ✔ render-service host refused without reverting  ACCEPTED → a port or an IP-literal host is refused; use the public https:// address tx 0xd50615982dfc08437b1ec3e75451950ed97d941de54005eafa3cd645ecc02e58
+  ✔ free-text flag refused without reverting  ACCEPTED → unknown flag type 'they sell my data'; one of DATA_SALE, CONTENT_OWNERSHIP, AUTO_RENEWAL, MANDATORY_ARBITRATION, UNILATERAL_CHANGE, ACCOUNT_TERMINATION, LIABILITY_WAIVER tx 0xf3a4eb782923bfc693a446ea11c27e08e1e1adf9a86ba030b06f027d9ce5bf39
+  ✔ short concern refused without reverting  ACCEPTED → the concern must be 20-200 characters, or left empty tx 0xe53dd24016d92a37a992ba56b4b55a4ccc7a48316de1919891aa2718941ef5c3
+  ✔ batch with unknown flag refused without reverting  ACCEPTED → unknown flag type 'SPYWARE'; one of DATA_SALE, CONTENT_OWNERSHIP, AUTO_RENEWAL, MANDATORY_ARBITRATION, UNILATERAL_CHANGE, ACCOUNT_TERMINATION, LIABILITY_WAIVER tx 0xd32ba772c973e24b3c8bcfca465a779f599bc8fa2bf261a8950f99d83da7fc53
+  ✔ no refusal created a check
+  ✔ check_tos accepted  check #1 tx 0x0298080ab3e868a39ce1fb57f1702263728a47bb88714f966c386c8f8709b863
+  ✔ duplicate pending check refused  check #1 for this URL and flag is still pending; judge it with judge_check(1)
+  ✔ outsider cannot pause  only the owner can pause new checks
+  ✔ owner pauses  tx 0x160188dbe1f5f07f23590bb724b5bc716a9506b090b7f67c9279277ae1745876
+  ✔ new check refused while paused  new checks are paused by the owner; judging, settling and refunds are unaffected
+  waiting for the 60s stall window (block clock; up to 26s + retries)
+  ✔ settle_stalled works WHILE PAUSED, sent by a wallet that filed nothing  tx 0xce8c3cb8362e33beab70cf6e4cd9aa1c78ca9c9790e19560ccff8d107a10ad15
+  ✔ stalled check is terminal with no outcome  No agreed judgment within 60s of the request; closed without an outcome. Submit a new check.
+  ✔ a stalled check cannot be judged  check #1 is stalled and can no longer change
+  ✔ owner unpauses
+
+cooldown on CANONICAL 0xeCF29bd912f571900D432164C3d4B4798B7a53B0
+  ✔ first request accepted  check #8 tx 0xe1726b1ed0fe13969f02d8516372cabdc3c02c263710ba8f6c236b61410e6843
+  ✔ second request inside 120s refused  one request per wallet per 120s; try again in 103s
+  ✘ ABSENT on a full-length TOS is pinned CLEAN with no model call  #8   tx null
+
+demo get_stats: {"balance_wei":"0","batches":0,"chain_balance_wei":"0","checks":1,"identity":"balance_wei == refundable_wei","judge_attempts":0,"judgments":0,"ledger_balanced":true,"owner":"0xb0431D1e70d3193AfCb8642daB2744A36fA163dE","paused":false,"refundable_wei":"0","refunded_wei":"0","refusals":10,"rubric_version":"1.0.0","stalled":1,"status_counts":{"JUDGED":0,"PENDING":0,"STALLED":1},"unsettled_attempts":0,"urls":1}
+
+18 passed, 1 failed
+
+The last step above failed to SUBMIT (Studio RPC: "Rate limit exceeded: 30 requests per minute"); it was rerun on its own:
+  ✘ (rerun) ABSENT on a full-length TOS is pinned CLEAN with no model call  #8 https://duckduckgo.com/terms AUTO_RENEWAL → INCONCLUSIVE SPARSE model_called=true tx 0xd10e16c3a34c6ac6d4f376ff814833043e7497e2be3e086932ddcbbba94bc50f → {"case":"SPARSE","check_id":8,"clarity_bucket":1,"content_hash":"e1068359e85051b9","evidence_present":true,"findings_key":"INCONCLUSIVE|sev0|clr1|scp0|ev1|len3|e1068359e85051b9","judged":true,"outcome":"INCONCLUSIVE","scope_bucket":0,"severity_bucket":0,"status":"OK"}
+
+Rerun of the last step (test/absent_step.mjs). Its first attempt failed to SUBMIT (Studio RPC: "Rate limit exceeded: 30 requests per minute").
+A retry judged #8 (DuckDuckGo x AUTO_RENEWAL): INCONCLUSIVE, case SPARSE - the terms mention "duckduckgo subscription" once, so the ABSENT expectation was wrong, not the contract.
+DuckDuckGo x MANDATORY_ARBITRATION is ABSENT on the captured render:
+  ✔ check_tos accepted  #9 tx 0xb85839be670e79905e7cb41aac21982a0f06e2d48e67cf437fd3bebfb7f594d6
+  ✔ ABSENT on a full-length TOS is pinned CLEAN with no model call  #9 https://duckduckgo.com/terms MANDATORY_ARBITRATION → CLEAN ABSENT model_called=false tx 0x4fd7fc342f7954b4b40809135b01df6ffb57ebb8d026f0e2b1482aa737165b59

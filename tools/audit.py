@@ -234,15 +234,35 @@ check(28, "https-only public URLs: http, IP literals, ports, credentials, intern
       and not P._parse_url("https://a.com:8080/")["ok"] and not P._parse_url("https://u@a.com/")["ok"]
       and not P._parse_url("https://studio-webdriver:4444/")["ok"]
       and not P._parse_url("https://svc.internal/")["ok"] and P._parse_url("https://duckduckgo.com/terms")["ok"])
-# 29 bracket: zero keyword matches never allow RED_FLAG
+# 29 the confidence gate: 0 topical -> CLEAN, strength 1-2 -> INCONCLUSIVE, both
+#    with no model call; the model is reachable only at strength >= 3.
 legal = ("Terms of Service. You agree to these terms. This agreement. Governing law applies. "
          "See our privacy policy. Jurisdiction lies with the courts.\n")
-zero_ok = True
+pad = "Filler text here.\n" * 600
+SIGNAL = {
+    "DATA_SALE": "We may sell your personal data to data brokers number {i}.",
+    "CONTENT_OWNERSHIP": "You grant us a perpetual, irrevocable license to your content, grant {i}.",
+    "AUTO_RENEWAL": "Your subscription will automatically renew, plan {i}.",
+    "MANDATORY_ARBITRATION": "Claims go to binding arbitration, forum {i}.",
+    "UNILATERAL_CHANGE": "We may modify these terms at any time, version {i}.",
+    "ACCOUNT_TERMINATION": "We may terminate your account for any reason, rule {i}.",
+    "LIABILITY_WAIVER": "We shall not be liable for any damages, item {i}.",
+}
+gate_ok = const("MIN_KEYWORD_STRENGTH") == 3
 for k in P.FLAG_KEYS:
-    br = P._bracket(k, P._read_page(legal + "Filler text here.\n" * 600, True, k))
-    if "RED_FLAG" in br["allowed"] or br["case"] != "ABSENT":
-        zero_ok = False
-check(29, "bracket: zero keyword matches force CLEAN or INCONCLUSIVE for all 7 flags", zero_ok)
+    for n, want_case, want_allowed, want_pinned in (
+            (0, "ABSENT", ["CLEAN"], True), (1, "WEAK", ["INCONCLUSIVE"], True),
+            (2, "WEAK", ["INCONCLUSIVE"], True), (3, "EXPLICIT", None, False)):
+        clauses = "".join(SIGNAL[k].format(i=i) + "\n" for i in range(n))
+        br = P._bracket(k, P._read_page(legal + clauses + pad, True, k))
+        if br["case"] != want_case or br["pinned"] != want_pinned:
+            gate_ok = False
+        if want_allowed is not None and br["allowed"] != want_allowed:
+            gate_ok = False
+        if n == 3 and "RED_FLAG" not in br["allowed"]:
+            gate_ok = False
+check(29, "confidence gate for all 7 flags: 0 matches CLEAN, strength 1-2 INCONCLUSIVE (no model), 3+ model",
+      gate_ok)
 # 30 two-wide ranges
 widths_ok = True
 for k in P.FLAG_KEYS:

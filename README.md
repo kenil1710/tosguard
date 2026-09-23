@@ -26,6 +26,7 @@ stored only if the validators agree on the whole findings vector.
 | clarity (0–7) and scope (0–7), inside ranges at most two wide set by code | URL validation and normalisation |
 | | rendering, sentence splitting, normalisation, the clause scan |
 | | the content hash, the page-length bucket, evidence_present |
+| | **the confidence gate**: whether a model is asked at all |
 | | **the bracket**: which outcomes are even allowed |
 | | **severity**: the flag's base, +1 for broad wording, 0 unless RED_FLAG |
 | | the quote, the reason, the per-flag statistics, all storage |
@@ -61,30 +62,45 @@ anyone  ── judge_check(id) ──▶ each validator:
              split → normalise → scan clauses    lower-case, collapsed, quotes unified
              excerpt = sorted matched clauses    ≤ 24 clauses / 6,000 chars
              bracket(case) → allowed outcomes, clarity/scope ranges
-             model (only if the bracket leaves a choice)
+             confidence gate: keyword strength < 3 → answer without a model
+             model (only at strength ≥ 3, inside the bracket)
            ── consensus on the findings vector ──▶ JUDGED (frozen)
 
 anyone  ── settle_stalled(id) after the stall window ──▶ STALLED   (works while paused)
 ```
 
-## The bracket
+## The confidence gate and the bracket
 
 Computed from the page before any model runs.
 
-| case | when | allowed |
-|---|---|---|
-| UNREADABLE | render failed, or < 500 chars | INCONCLUSIVE — pinned, no model |
-| NOT_TOS | < 4 of 16 legal markers (login wall, block page, home page) | INCONCLUSIVE — pinned |
-| ABSENT | legal document, zero topical clauses | CLEAN if ≥ 6,000 chars, else INCONCLUSIVE — pinned |
-| SPARSE | 1–2 topical clauses, nothing explicit | CLEAN / INCONCLUSIVE |
-| DENIED | a denial ("we do not sell…") and < 3 other topical clauses | CLEAN / INCONCLUSIVE |
-| MENTIONED | ≥ 3 topical clauses, none explicit | RED_FLAG / CLEAN / INCONCLUSIVE |
-| EXPLICIT | ≥ 1 clause in explicit wording ("royalty-free license", "binding arbitration") | RED_FLAG / CLEAN / INCONCLUSIVE |
+**Keyword strength** = the clauses that *explicitly state* the practice
+("royalty-free license", "binding arbitration", "sell your personal
+information") plus the clauses that *explicitly deny* it ("we do not sell").
+Passing topical mentions — "our partners", "third-party software" — are not
+signal.
 
-**Zero keyword matches can never produce RED_FLAG.** A denial cuts its whole
-clause before explicit phrases are looked for, so "does not share personal
-information with advertisers" is a denial, not a sale. Reasoning for each
-choice: [`contracts/NOTES.md`](contracts/NOTES.md).
+| keyword evidence | case | outcome | model? |
+|---|---|---|---|
+| page would not render, or < 500 chars | UNREADABLE | INCONCLUSIVE | no |
+| not a legal document (< 4 of 16 legal markers: login wall, block page, home page) | NOT_TOS | INCONCLUSIVE | no |
+| **zero** topical clauses | ABSENT | **CLEAN** | no |
+| topical clauses, keyword strength **0–2** | WEAK | **INCONCLUSIVE** | no |
+| keyword strength **≥ 3**, all denials | DENIED | CLEAN / INCONCLUSIVE | yes, inside the bracket |
+| keyword strength **≥ 3**, at least one explicit clause | EXPLICIT | RED_FLAG / CLEAN / INCONCLUSIVE | yes, inside the bracket |
+
+**Why the gate counts signal clauses, not raw keyword matches.** In the first
+two seed runs, three checks got the same content hash both times but a
+different outcome. Those pages had **33, 7 and 5** keyword matches, so a gate
+on raw matches ("1–2 → INCONCLUSIVE, 3+ → model") would have sent all three to
+the model again. What they had in common was **0 or 1 signal clauses**. The two
+checks that never moved had 5 and 9. So borderline evidence now always gets
+the same answer, because no model is asked. RED_FLAG is reachable only when
+three or more clauses take a position and at least one states the practice
+outright.
+
+A denial cuts its whole clause before explicit phrases are looked for, so
+"does not share personal information with advertisers" is a denial, not a
+sale. Reasoning for each choice: [`contracts/NOTES.md`](contracts/NOTES.md).
 
 ## Consensus: the full findings vector
 
@@ -92,7 +108,7 @@ Validators do not compare a verdict. They compare:
 
 | compared exactly | compared within one bucket |
 |---|---|
-| outcome · severity_bucket · evidence_present · **content_hash** · page_length_bucket · page_state · case · allowed set · ranges · legal-marker / conspicuous / matched / explicit / denied / broad counts · facts hash · model_called | clarity_bucket · scope_bucket |
+| outcome · severity_bucket · evidence_present · **content_hash** · page_length_bucket · **keyword_strength** · page_state · case · allowed set · ranges · legal-marker / conspicuous / matched / explicit / denied / broad counts · facts hash · model_called | clarity_bucket · scope_bucket |
 
 Every clarity/scope range is at most two wide, so the tolerance can never
 split two validators who agree on the outcome — and never let two outcomes
@@ -143,38 +159,37 @@ any text, no model) · `get_checks_by_requester(addr)` · `get_stats()` ·
 `deployments.json` records each deploy's sha256; `tools/audit.py` check 32
 fails if `contracts/TOSGuard.py` differs from it by one byte.
 
-## Seeded results
+## Seeded results — run twice, identical
 
-All on the canonical instance, through real consensus rounds; every judgment
-settled on its first round.
+The nine checks were seeded **twice** on the same deployment, as 18 separate
+checks, each judged by real consensus. `test/compare_runs.mjs` re-reads both
+runs from the chain and compares every exact field:
+**9 pairs, 0 outcome flips, 0 differences** (outcome, severity, evidence,
+length bucket, case, keyword strength, model called, content hash). Clarity
+and scope also matched.
 
-| # | page · flag | brief expected | on chain | case | sev | why |
+| page · flag | brief expected | both runs | case | strength | model | why |
 |---|---|---|---|---|---|---|
-| 1 | twitter.com/en/tos · DATA_SALE | RED_FLAG | **INCONCLUSIVE** | MENTIONED | 0 | X's terms say "we do not disclose personally-identifying information to third parties except in accordance with our privacy policy" — the answer lives in the privacy policy |
-| 2 | reddit.com/policies/user-agreement · CONTENT_OWNERSHIP | RED_FLAG | **INCONCLUSIVE** | UNREADABLE | 0 | Reddit refuses the validators' headless browser; nothing was read, so nothing is claimed |
-| 3 | duckduckgo.com/terms · DATA_SALE | CLEAN | **CLEAN** | MENTIONED | 0 | only incidental third-party mentions (software, websites, a liability list) |
-| 4 | wikipedia.org/wiki/Terms_of_Use · ACCOUNT_TERMINATION | RED_FLAG or CLEAN | **RED_FLAG** | EXPLICIT | 5 | the URL redirects to the encyclopedia article *about* ToS, which quotes services that "can suspend or stop at any time" |
-| 5 | example.com · DATA_SALE | INCONCLUSIVE | **INCONCLUSIVE** | UNREADABLE | 0 | 129 characters, not a terms document; no model call |
-| 6 | twitter.com/en/tos · CONTENT_OWNERSHIP *(batch)* | — | **RED_FLAG** | EXPLICIT | 6 | "you grant us a worldwide, non-exclusive, royalty-free license (with the right to sublicense)…" |
-| 7 | twitter.com/en/tos · MANDATORY_ARBITRATION *(batch)* | — | **RED_FLAG** | EXPLICIT | 7 | binding arbitration, class-action and jury-trial waiver |
-| 8 | duckduckgo.com/terms · AUTO_RENEWAL | — | **INCONCLUSIVE** | SPARSE | 0 | one passing "subscription" mention |
-| 9 | duckduckgo.com/terms · MANDATORY_ARBITRATION | — | **CLEAN** | ABSENT | 0 | no arbitration language at all; pinned by the bracket, no model call |
+| twitter.com/en/tos · DATA_SALE | RED_FLAG | **INCONCLUSIVE** | WEAK | 1 | no | 33 topical clauses; the only one that takes a position is "we do not disclose personally-identifying information to third parties except in accordance with our privacy policy" |
+| reddit.com/policies/user-agreement · CONTENT_OWNERSHIP | RED_FLAG | **INCONCLUSIVE** | UNREADABLE | 0 | no | Reddit refuses the validators' headless browser |
+| duckduckgo.com/terms · DATA_SALE | CLEAN | **INCONCLUSIVE** | WEAK | 0 | no | only incidental third-party mentions; the no-sale promise is in DuckDuckGo's privacy policy, not its terms |
+| wikipedia.org/wiki/Terms_of_Use · ACCOUNT_TERMINATION | either | **INCONCLUSIVE** | WEAK | 1 | no | redirects to the encyclopedia article *about* ToS, which has one quoted "can suspend or stop at any time" |
+| example.com · DATA_SALE | INCONCLUSIVE | **INCONCLUSIVE** | UNREADABLE | 0 | no | 129 characters |
+| twitter.com/en/tos · CONTENT_OWNERSHIP | — | **RED_FLAG** sev 6 | EXPLICIT | 5 | yes | "you grant us a worldwide, non-exclusive, royalty-free license (with the right to sublicense)…" |
+| twitter.com/en/tos · MANDATORY_ARBITRATION | — | **RED_FLAG** sev 7 | EXPLICIT | 9 | yes | binding arbitration, class-action and jury-trial waiver |
+| duckduckgo.com/terms · AUTO_RENEWAL | — | **INCONCLUSIVE** | WEAK | 0 | no | one passing "subscription" mention |
+| duckduckgo.com/terms · MANDATORY_ARBITRATION | — | **CLEAN** | ABSENT | 0 | no | no arbitration language at all |
 
-**Two brief expectations did not hold, and the record says so.** Reddit could
-not be read at all. X's *terms* do not contain a data-sale clause; they defer
-to a separate privacy policy. The contract judges the page it is given.
-
-**Re-running shows where the subjectivity is.** The seed ran twice (the first
-deployment is in `docs/superseded/`). Every page produced the **same content
-hash** both times, and the pinned and explicit cases gave the same outcome. The
-three borderline pages did not: X·DATA_SALE went CLEAN → INCONCLUSIVE,
-DuckDuckGo·DATA_SALE INCONCLUSIVE → CLEAN, and the Wikipedia article
-INCONCLUSIVE → RED_FLAG. Validators agreed within each round both times;
-across rounds, a borderline page can land on either allowed side
-([docs/PROBE.md §6](docs/PROBE.md)).
+**Three brief expectations do not hold, and the record says so.** Reddit could
+not be read. X's and DuckDuckGo's *terms* don't take a position on data sale
+(both defer to a separate privacy policy), so the gate makes them
+INCONCLUSIVE instead of letting a model guess. Before the gate, those two
+flipped between runs (CLEAN ↔ INCONCLUSIVE); now they give the same answer
+every time.
 
 Every judged check re-derives cleanly with `verify_check`. Full read-back,
-quotes, hashes and transaction hashes: [`docs/EVIDENCE.md`](docs/EVIDENCE.md).
+both runs' logs and transaction hashes: [`docs/EVIDENCE.md`](docs/EVIDENCE.md);
+the pre-gate runs are in [`docs/superseded/`](docs/superseded/).
 
 ## Tests and audit
 
@@ -185,12 +200,15 @@ genvm-lint lint contracts/TOSGuard.py
 
 cd test && npm install
 node accounts.mjs && node deploy.mjs --both
-node seed.mjs && node lifecycle.mjs && node collect.mjs   # real consensus on Studio Dev
+node seed.mjs --run=1 && node seed.mjs --run=2      # the nine checks, twice
+node compare_runs.mjs                                # exit 1 on any outcome flip
+node lifecycle.mjs && node collect.mjs               # refusals, pause, stall; docs/EVIDENCE.md
 ```
 
-The offline suite (387 tests) runs the real contract against a
+The offline suite (400 tests) runs the real contract against a
 runtime stub whose TreeMap/DynArray reproduce the runner's semantics. It builds
-**one forgery per field** of the findings vector and requires `_coherent` to
+all three gate tiers for every flag (and that the weak tier never reaches a
+model), **one forgery per field** of the findings vector and requires `_coherent` to
 refuse each; moves each compared field in a validator's reading and requires
 disagreement; proves shuffled, re-cased and re-spaced renders hash identically;
 brackets the real renders captured on Studio Dev (`test/fixtures/`); and walks
@@ -213,13 +231,22 @@ call.
 - **Terms behind a login wall, bot wall or CAPTCHA are INCONCLUSIVE.** Reddit
   refused Studio's headless browser outright, so the Reddit seed check is
   INCONCLUSIVE — the honest answer, not a guess.
-- **Legal interpretation is subjective.** The bracket bounds it: the model can
-  only choose among outcomes the evidence allows, and severity is not its to
-  choose. But inside the bracket, "RED_FLAG" versus "INCONCLUSIVE" is still a
-  reading. Validators must agree on it within a round, yet on borderline pages
-  a re-run can land on the other allowed outcome — measured on three of seven
-  seed pages (same content hash, different outcome). Explicit clauses did not
-  move. Treat a MENTIONED-case result as a lead, not a verdict.
+- **Legal interpretation is subjective.** Two things bound it. The confidence
+  gate keeps the model away from pages with fewer than three signal clauses
+  (they are INCONCLUSIVE, identically, every time), and the bracket limits the
+  model to outcomes the evidence allows (severity is never its call). Above
+  the gate, RED_FLAG versus INCONCLUSIVE is still a reading. The two
+  model-judged seed checks gave the same answer in all four runs, but a page
+  with exactly three weak signal clauses is where a re-run is most likely to
+  differ.
+- **The gate trades recall for stability.** A page that implies a practice in
+  thirty clauses without stating it explicitly (X on data sharing) is
+  INCONCLUSIVE, not RED_FLAG. That's deliberate: "the terms don't settle it"
+  is better than a result that changes between runs.
+- **Zero matches means CLEAN at any length.** If a render is cut short before
+  the relevant section, a silent page reads as CLEAN. The 500-character floor
+  and the legal-marker test catch error pages and login walls, but not a
+  long page that stops partway.
 - **A TOS is not the whole contract.** Several services put their data
   practices in a separate privacy policy. X's and DuckDuckGo's terms both defer
   to one, so a `DATA_SALE` check on the terms page alone answers "do the

@@ -1,0 +1,55 @@
+TOSGuard seed run 1 → 0xCD994aCf7fE40d0A63Dda20f20ea78e69B994ed7  (2026-09-23T16:40:49.241Z)
+check_tos https://twitter.com/en/tos DATA_SALE by consumer1: ACCEPTED tx 0x452b275b10c7a333d8eedb549d5f1e609bfc9ec5058da373c0aa01b02cee071b → #1 OK 
+check_tos https://www.reddit.com/policies/user-agreement CONTENT_OWNERSHIP by consumer2: ACCEPTED tx 0x81946a4510c2336ecc294c0b6c7e08d1e533a590c8da4a11b54085615f2c6509 → #2 OK 
+check_tos https://duckduckgo.com/terms DATA_SALE by consumer3: ACCEPTED tx 0x277818ba50575b535d26a7d9b907091c3babed3cc1b8f4d724e32b445cc7dc5e → #3 OK 
+check_tos https://www.wikipedia.org/wiki/Terms_of_Use ACCOUNT_TERMINATION by consumer4: ACCEPTED tx 0xa7a0af2731ff1ef6191bdaff8a466b3a34ba1c235711e7a8c935d82eeb20c2aa → #4 OK 
+check_tos https://example.com/ DATA_SALE by consumer5: ACCEPTED tx 0xfb926f48fe8a97d39710286df223596b07574c7ee4369a43d188447c5b0fe2d1 → #5 OK 
+batch_check https://twitter.com/en/tos [CONTENT_OWNERSHIP, MANDATORY_ARBITRATION] by consumer6: ACCEPTED tx 0xb9eeee2b65cdd4c1163d2851e4a35e99738d0808c7a61b812df81c9b9420dc13 → (return unreadable; ids read from get_url_report)
+batch_check https://duckduckgo.com/terms [AUTO_RENEWAL, MANDATORY_ARBITRATION] by outsider: ACCEPTED tx 0x0307de3e2403f59319e911d343e75bff3c21dfd34ee153cda4a2bcdc938477d2 → (return unreadable; ids read from get_url_report)
+
+judging #1  https://twitter.com/en/tos DATA_SALE
+  judge_check(1) try 1: ACCEPTED 26s tx 0x2ddf87aee3fb5798efa334f4f310a8baedf1286d6aafa5a84790bb989d5d0599 → {"case":"WEAK","check_id":1,"clarity_bucket":0,"content_hash":"37ae1b886ff48046","evidence_present":true,"findings_key":"INCONCLUSIVE|sev0|clr0|scp0|ev1|len7|37ae1b886ff48046","judged":true,"outcome":"INCONCLUSIVE","scope_bucket":0,"severity_bucket":0,"status":"OK"}
+  #1: JUDGED INCONCLUSIVE  sev 0 clr 0 scp 0 ev true len 7 case WEAK strength 1 model false hash 37ae1b886ff48046 verify true
+  reason: 34 clauses touch the topic but only 1 state or deny it explicitly (3 needed for a reading); too little signal to judge. Finding: INCONCLUSIVE.
+
+judging #2  https://www.reddit.com/policies/user-agreement CONTENT_OWNERSHIP
+  judge_check(2) try 1: ACCEPTED 8s tx 0xee961bfaba12ca8e61c480560ace145732d4386c4b4f4ccf8c8a8523a5e92509 → {"case":"UNREADABLE","check_id":2,"clarity_bucket":0,"content_hash":"36147624a4e3e8a1","evidence_present":false,"findings_key":"INCONCLUSIVE|sev0|clr0|scp0|ev0|len0|36147624a4e3e8a1","judged":true,"outcome":"INCONCLUSIVE","scope_bucket":0,"severity_bucket":0,"status":"OK"}
+  #2: JUDGED INCONCLUSIVE  sev 0 clr 0 scp 0 ev false len 0 case UNREADABLE strength 0 model false hash 36147624a4e3e8a1 verify true
+  reason: The page could not be rendered or was too short to be a terms document (for example a login wall or an error page). Finding: INCONCLUSIVE.
+
+judging #3  https://duckduckgo.com/terms DATA_SALE
+  judge_check(3) try 1: ACCEPTED 16s tx 0xdbd1676ba6bc6eede96ddf533bf8ba1635646de3dbd6c03748f075a6c92cd739 → {"case":"WEAK","check_id":3,"clarity_bucket":0,"content_hash":"0afde188a6a3a9ae","evidence_present":true,"findings_key":"INCONCLUSIVE|sev0|clr0|scp0|ev1|len3|0afde188a6a3a9ae","judged":true,"outcome":"INCONCLUSIVE","scope_bucket":0,"severity_bucket":0,"status":"OK"}
+  #3: JUDGED INCONCLUSIVE  sev 0 clr 0 scp 0 ev true len 3 case WEAK strength 0 model false hash 0afde188a6a3a9ae verify true
+  reason: 7 clauses touch the topic but only 0 state or deny it explicitly (3 needed for a reading); too little signal to judge. Finding: INCONCLUSIVE.
+
+judging #4  https://www.wikipedia.org/wiki/Terms_of_Use ACCOUNT_TERMINATION
+  judge_check(4) try 1: ACCEPTED 17s tx 0x3329b4a82040af90cb97fef89c7ffee84dd81b9160513231f7e98c519043448d → {"case":"WEAK","check_id":4,"clarity_bucket":0,"content_hash":"ee38ce448eb3befc","evidence_present":true,"findings_key":"INCONCLUSIVE|sev0|clr0|scp0|ev1|len4|ee38ce448eb3befc","judged":true,"outcome":"INCONCLUSIVE","scope_bucket":0,"severity_bucket":0,"status":"OK"}
+  #4: JUDGED INCONCLUSIVE  sev 0 clr 0 scp 0 ev true len 4 case WEAK strength 1 model false hash ee38ce448eb3befc verify true
+  reason: 5 clauses touch the topic but only 1 state or deny it explicitly (3 needed for a reading); too little signal to judge. Finding: INCONCLUSIVE.
+
+judging #5  https://example.com/ DATA_SALE
+  judge_check(5) try 1: ACCEPTED 16s tx 0x624eb65cb7110d8395be3d993f9db99b32ea9ba8ecd121fa18ee6fe07c31f1ca → {"case":"UNREADABLE","check_id":5,"clarity_bucket":0,"content_hash":"16e6f7f6e71699be","evidence_present":false,"findings_key":"INCONCLUSIVE|sev0|clr0|scp0|ev0|len0|16e6f7f6e71699be","judged":true,"outcome":"INCONCLUSIVE","scope_bucket":0,"severity_bucket":0,"status":"OK"}
+  #5: JUDGED INCONCLUSIVE  sev 0 clr 0 scp 0 ev false len 0 case UNREADABLE strength 0 model false hash 16e6f7f6e71699be verify true
+  reason: The page could not be rendered or was too short to be a terms document (for example a login wall or an error page). Finding: INCONCLUSIVE.
+
+judging #6  https://twitter.com/en/tos CONTENT_OWNERSHIP
+  judge_check(6) try 1: ACCEPTED 28s tx 0x24347078af2bd5d5b0d9f3b1f9bc9df27802cb37c8823643454bb57bb7b5f1f1 → {"case":"EXPLICIT","check_id":6,"clarity_bucket":6,"content_hash":"0f60d1a5ca9eb9a0","evidence_present":true,"findings_key":"RED_FLAG|sev6|clr6|scp6|ev1|len7|0f60d1a5ca9eb9a0","judged":true,"outcome":"RED_FLAG","scope_bucket":6,"severity_bucket":6,"status":"OK"}
+  #6: JUDGED RED_FLAG  sev 6 clr 6 scp 6 ev true len 7 case EXPLICIT strength 5 model true hash 0f60d1a5ca9eb9a0 verify true
+  quote: "in choosing to submit, input, create, generate, post, or display content on or through the services, you grant us a worldwide, non-exclusive, royalty-free license (with the right to sublicense) to use, copy, reproduce, process, adapt, modif"
+  reason: 4 clauses state the practice explicitly (34 topical in all). Finding: RED FLAG - Broad license to your content.
+
+judging #7  https://twitter.com/en/tos MANDATORY_ARBITRATION
+  judge_check(7) try 1: ACCEPTED 32s tx 0xad2a1238100a8c5a59b012630013b2e90ae8b5585ea202b90e34b560406ae44e → {"case":"EXPLICIT","check_id":7,"clarity_bucket":7,"content_hash":"63a6755283c8323e","evidence_present":true,"findings_key":"RED_FLAG|sev7|clr7|scp6|ev1|len7|63a6755283c8323e","judged":true,"outcome":"RED_FLAG","scope_bucket":6,"severity_bucket":7,"status":"OK"}
+  #7: JUDGED RED_FLAG  sev 7 clr 7 scp 6 ev true len 7 case EXPLICIT strength 9 model true hash 63a6755283c8323e verify true
+  quote: "the arbitrator's award shall be final and binding, and the parties waive any right to appeal the award to the maximum extent permitted by law."
+  reason: 9 clauses state the practice explicitly (20 topical in all). Finding: RED FLAG - Mandatory arbitration / class action waiver.
+
+judging #8  https://duckduckgo.com/terms AUTO_RENEWAL
+  judge_check(8) try 1: ACCEPTED 18s tx 0xfa447ee9fe35d2442e4dfef5ad40ee47616412d53614636392e9af287ecd27ff → {"case":"WEAK","check_id":8,"clarity_bucket":0,"content_hash":"d86a6059e37372f2","evidence_present":true,"findings_key":"INCONCLUSIVE|sev0|clr0|scp0|ev1|len3|d86a6059e37372f2","judged":true,"outcome":"INCONCLUSIVE","scope_bucket":0,"severity_bucket":0,"status":"OK"}
+  #8: JUDGED INCONCLUSIVE  sev 0 clr 0 scp 0 ev true len 3 case WEAK strength 0 model false hash d86a6059e37372f2 verify true
+  reason: 1 clause touch the topic but only 0 state or deny it explicitly (3 needed for a reading); too little signal to judge. Finding: INCONCLUSIVE.
+
+judging #9  https://duckduckgo.com/terms MANDATORY_ARBITRATION
+  judge_check(9) try 1: ACCEPTED 20s tx 0x17c9ad32c176b2f9cd66de3b97136bbcc53dfcf18845f5c92fb9e77fe857b786 → {"case":"ABSENT","check_id":9,"clarity_bucket":0,"content_hash":"a57cc5df94afc02a","evidence_present":false,"findings_key":"CLEAN|sev0|clr0|scp0|ev0|len3|a57cc5df94afc02a","judged":true,"outcome":"CLEAN","scope_bucket":0,"severity_bucket":0,"status":"OK"}
+  #9: JUDGED CLEAN  sev 0 clr 0 scp 0 ev false len 3 case ABSENT strength 0 model false hash a57cc5df94afc02a verify true
+  reason: The terms never mention the topic of 'Mandatory arbitration / class action waiver'. Finding: CLEAN for Mandatory arbitration / class action waiver.
