@@ -156,35 +156,44 @@ any text, no model) · `get_checks_by_requester(addr)` · `get_stats()` ·
 
 | instance | address | settings |
 |---|---|---|
-| **TOSGuard** (canonical) | `0xeCF29bd912f571900D432164C3d4B4798B7a53B0` | 120s per-wallet cooldown, 1h stall window |
-| TOSGuardDemo | `0x1AB66BBfEa8eB06fdfFDBD86571b62572C3Bb0A4` | **same bytes**; no cooldown, 60s stall — so `settle_stalled` can be watched |
+| **TOSGuard** (canonical) | `0x69A5b7EaAb6334efFf9e6923e530df8cb68f576A` | 120s per-wallet cooldown, 1h stall window |
+| TOSGuardDemo | `0x4f5a4504479ee3E53E461039A437A262BA661e4e` | **same bytes**; no cooldown, 60s stall — so `settle_stalled` can be watched |
+
+Both run rubric **1.2.1**, deployed from this repository's `contracts/TOSGuard.py`
+(99,742 bytes, sha256 `a210c5d52778d907d990d48a35dbfcbb915d7f461872f63f4c34421a782310ac`).
+Explorer: https://explorer-studio-dev.genlayer.com/
 
 `deployments.json` records each deploy's sha256; `tools/audit.py` check 32
-fails if `contracts/TOSGuard.py` differs from it by one byte.
+fails if `contracts/TOSGuard.py` differs from it by one byte, or if this table
+names any other address. `test/verify_source.mjs` reads both contracts' code
+back from the chain (`gen_getContractCode`) and compares it byte-for-byte with
+the file (and, with `--github=<raw URL>`, with GitHub's copy).
 
-## Seeded results: two runs, identical
+## Seeded results: two runs, one borderline flip
 
 Every URL was first rendered by a validator through a throwaway probe
 contract. The scanner was run over those exact bytes
 ([`docs/probe-report.md`](docs/probe-report.md)), and a check was only seeded
 where the terms clearly address the flag.
 
-The nine checks were then seeded **twice** on the same deployment (18
+The nine checks were then seeded **twice** on the deployment above (18
 separate checks, each judged by real consensus). `test/compare_runs.mjs`
-re-read both runs from the chain: **9 pairs, 0 outcome flips, 0 differences**
-in outcome, severity, evidence, length bucket, case, keyword strength,
-indicators, model-called or content hash. Clarity and scope matched too.
+re-read both runs from the chain: **9 pairs, 1 outcome flip.** 8 pairs are
+identical in outcome, severity, evidence, length bucket, case, keyword
+strength, indicators, model-called and content hash. The flip is GitHub ×
+CONTENT_OWNERSHIP: the same page (content hash `38ff1ee5fe6c7cd6`), the same
+four indicators, the same bracket (RED_FLAG or INCONCLUSIVE; CLEAN is never
+allowed), judged INCONCLUSIVE in run 1 and RED_FLAG in run 2 (whose first
+round was UNDETERMINED: the validators themselves split). See the GitHub note
+below.
 
-**8 of 9 are decisive (7 RED_FLAG, 2 CLEAN). The one INCONCLUSIVE is a page
-with nothing to read.**
-
-| page · flag | both runs | case · strength | evidence (quoted from the stored excerpt) |
+| page · flag | runs 1 and 2 | case · strength | evidence (quoted from the stored excerpt) |
 |---|---|---|---|
 | x.com/en/tos · CONTENT_OWNERSHIP | **RED_FLAG** sev 6 | STRONG · 6 | "you grant us a worldwide, non-exclusive, royalty-free license (with the right to sublicense) to use, copy, reproduce, process, adapt…" |
 | x.com/en/tos · MANDATORY_ARBITRATION | **RED_FLAG** sev 7 | STRONG · 5 | "any arbitration shall be conducted on an individual basis only, and not as a class, collective, or representative action" |
 | discord.com/terms · CONTENT_OWNERSHIP | **RED_FLAG** sev 6 | STRONG · 7 | "this license is worldwide, non-exclusive…, royalty-free…, sublicensable, and transferable" |
 | discord.com/terms · ACCOUNT_TERMINATION | **RED_FLAG** sev 5 | MODERATE · 4 | "we reserve the right to suspend or terminate your account… with or without notice, at our discretion for any reason" |
-| github.com/site/terms · CONTENT_OWNERSHIP | **RED_FLAG** sev 6 | MODERATE · 4 | "by making a repository public, you grant other users a nonexclusive, worldwide license to use, display, perform and reproduce… your content" |
+| github.com/site/terms · CONTENT_OWNERSHIP | INCONCLUSIVE → **RED_FLAG** sev 6 | MODERATE · 4 | "by making a repository public, you grant other users a nonexclusive, worldwide license to use, display, perform and reproduce… your content" |
 | zoom.us/en/terms · UNILATERAL_CHANGE | **RED_FLAG** sev 4 | MODERATE · 4 | "if you continue to use the services after the effective date of the changes, then you agree to the revised terms and conditions" |
 | duckduckgo.com/terms · DATA_SALE | **CLEAN** | ABSENT · 0 | none of the ten data-sale indicators anywhere in the terms |
 | duckduckgo.com/terms · MANDATORY_ARBITRATION | **CLEAN** | ABSENT · 0 | no arbitration, waiver or class-action language |
@@ -199,7 +208,10 @@ with nothing to read.**
   deliberately narrow. The strong-sounding "perpetual, irrevocable" wording is
   in its *feedback* clause, which the scanner now excludes. The RED_FLAG rests
   on the worldwide licence that a public repository grants to other users. The
-  bracket allowed only RED_FLAG or INCONCLUSIVE, and both runs chose RED_FLAG.
+  bracket allows only RED_FLAG or INCONCLUSIVE, and this is the one borderline
+  seed: its 3 denial clauses pull against the licence, and the model has chosen
+  each side (both runs on the first v1.2.1 deployment and run 2 here: RED_FLAG;
+  run 1 here: INCONCLUSIVE).
 
 Every judged check re-derives cleanly with `verify_check`. Full read-back,
 logs and transaction hashes are in [`docs/EVIDENCE.md`](docs/EVIDENCE.md);

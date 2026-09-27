@@ -1,0 +1,11 @@
+{
+  "https://zoom.us/en/terms UNILATERAL_CHANGE": 10,
+  "https://github.com/site/terms CONTENT_OWNERSHIP": 11,
+  "https://example.com/ DATA_SALE": 12,
+  "https://x.com/en/tos CONTENT_OWNERSHIP": 13,
+  "https://x.com/en/tos MANDATORY_ARBITRATION": 14,
+  "https://duckduckgo.com/terms DATA_SALE": 15,
+  "https://duckduckgo.com/terms MANDATORY_ARBITRATION": 16,
+  "https://discord.com/terms CONTENT_OWNERSHIP": 17,
+  "https://discord.com/terms ACCOUNT_TERMINATION": 18
+}

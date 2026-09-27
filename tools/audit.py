@@ -14,6 +14,7 @@ deployments.json recorded at deploy time.
 import ast
 import hashlib
 import json
+import re
 import sys
 import types
 from pathlib import Path
@@ -281,11 +282,16 @@ fj = text(fn("_from_json"))
 check(31, "severity is deterministic: the model is never asked for it",
       "severity" not in fj and "severity" not in text(fn("_prompt"))
       and "severity_red" in text(fn("_derive")))
-# 32 source == deployed
+# 32 source == deployed, and the README publishes THOSE addresses. v1.2.1 was
+# once rejected because the README still named the v1.0.0 instances.
 sha = hashlib.sha256(SOURCE.read_bytes()).hexdigest()
-check(32, "source == deployed byte-for-byte (sha256, canonical + demo)",
+readme = (ROOT / "README.md").read_text(encoding="utf8")
+published = {a.lower() for a in re.findall(r"`(0x[0-9a-fA-F]{40})`", readme.split("## Deployed", 1)[-1].split("\n## ", 1)[0])}
+deployed = {DEP.get(k, {}).get("address", "").lower() for k in ("TOSGuard", "TOSGuardDemo")}
+check(32, "source == deployed byte-for-byte (sha256, canonical + demo); README names those addresses",
       DEP.get("TOSGuard", {}).get("source_sha256") == sha
-      and DEP.get("TOSGuardDemo", {}).get("source_sha256") == sha, sha[:16])
+      and DEP.get("TOSGuardDemo", {}).get("source_sha256") == sha
+      and published == deployed, sha[:16] + " readme " + ",".join(sorted(published)))
 check(33, "canonical instance enforces the brief (120s per wallet); demo is the same bytes",
       DEP.get("TOSGuard", {}).get("cooldown_s") == 120
       and DEP.get("TOSGuard", {}).get("payable_methods") == 0

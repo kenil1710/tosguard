@@ -1,0 +1,58 @@
+TOSGuard seed run 2 → 0xeceFA5dc2E7BDA6c95492C707b67a51B9E95F159  (2026-09-23T20:10:35.857Z)
+check_tos https://zoom.us/en/terms UNILATERAL_CHANGE by consumer4: ACCEPTED tx 0x6ce475cbdc9ef30a2f277a96136271659565d58de3d0644c161c4286bc8a3fd0 → #10 OK 
+check_tos https://github.com/site/terms CONTENT_OWNERSHIP by consumer5: ACCEPTED tx 0x51b9f3881885ff77827ad1434f900b629efec4b73981cd998ebebbaeefa54939 → #11 OK 
+check_tos https://example.com/ DATA_SALE by consumer6: ACCEPTED tx 0x1386b75eb3944a15f620e14d17a71e33a09e17a8727c88690edf1d446ba100d1 → #12 OK 
+batch_check https://x.com/en/tos [CONTENT_OWNERSHIP, MANDATORY_ARBITRATION] by consumer1: ACCEPTED tx 0xb64d4ebd76c61d80ec0daba98f8369283c6889140257af126040ffa000b01acd → (return unreadable; ids read from get_url_report)
+batch_check https://duckduckgo.com/terms [DATA_SALE, MANDATORY_ARBITRATION] by consumer2: ACCEPTED tx 0xf16566b698fb71d2a7c9e899e5c4a644469db5abd5bf3b65c2fd0824ae540443 → (return unreadable; ids read from get_url_report)
+batch_check https://discord.com/terms [CONTENT_OWNERSHIP, ACCOUNT_TERMINATION] by consumer3: ACCEPTED tx 0x1d68723346fae158ce1714345cc46cc57ea8f772a55b08b90eb58787cf6ddad6 → (return unreadable; ids read from get_url_report)
+
+judging #10  https://zoom.us/en/terms UNILATERAL_CHANGE
+  judge_check(10) try 1: ACCEPTED 30s tx 0x0325d165f40408f6d4fbc67a45b16147f299ff0bcf1744d9c3d3dcf55708e59b → {"case":"MODERATE","check_id":10,"clarity_bucket":5,"content_hash":"8c5afa84a7f79f17","evidence_present":true,"findings_key":"RED_FLAG|sev4|clr5|scp5|ev1|len6|8c5afa84a7f79f17","judged":true,"outcome":"RED_FLAG","scope_bucket":5,"severity_bucket":4,"status":"OK"}
+  #10: JUDGED RED_FLAG  sev 4 clr 5 scp 5 ev true len 6 case MODERATE strength 4 [modify these terms,change at any time,revised terms,continued use constitutes] model true hash 8c5afa84a7f79f17 verify true
+  quote: "if you continue to use the services after the effective date of the changes, then you agree to the revised terms and conditions."
+  reason: 6 matching clauses, 4 distinct indicators (modify these terms, change at any time, revised terms, continued use constitutes), 2 denial clauses; moderate evidence, judged one-sided. Finding: RED FLAG - Unilateral changes to the terms.
+
+judging #11  https://github.com/site/terms CONTENT_OWNERSHIP
+  judge_check(11) try 1: ACCEPTED 22s tx 0x54b8e726b1607a691d55fdcfc865baef80341fbda2e1d3e750e0d5cb79e128c9 → {"case":"MODERATE","check_id":11,"clarity_bucket":5,"content_hash":"38ff1ee5fe6c7cd6","evidence_present":true,"findings_key":"RED_FLAG|sev6|clr5|scp6|ev1|len5|38ff1ee5fe6c7cd6","judged":true,"outcome":"RED_FLAG","scope_bucket":6,"severity_bucket":6,"status":"OK"}
+  #11: JUDGED RED_FLAG  sev 6 clr 5 scp 6 ev true len 5 case MODERATE strength 4 [license,worldwide,reproduce,grant us] model true hash 38ff1ee5fe6c7cd6 verify true
+  quote: "by making a repository public, you grant other users a nonexclusive, worldwide license to use, display, perform and reproduce (by forking) your content through the service as permitted by github's functionality."
+  reason: 23 matching clauses, 4 distinct indicators (license, worldwide, reproduce, grant us), 3 denial clauses; moderate evidence, judged one-sided. Finding: RED FLAG - Broad license to your content.
+
+judging #12  https://example.com/ DATA_SALE
+  judge_check(12) try 1: ACCEPTED 19s tx 0x26c9a714eb3931554808486a35cb390721adc85cd3718b4ea081a990193b153e → {"case":"UNREADABLE","check_id":12,"clarity_bucket":0,"content_hash":"3186e7f6f659cedc","evidence_present":false,"findings_key":"INCONCLUSIVE|sev0|clr0|scp0|ev0|len0|3186e7f6f659cedc","judged":true,"outcome":"INCONCLUSIVE","scope_bucket":0,"severity_bucket":0,"status":"OK"}
+  #12: JUDGED INCONCLUSIVE  sev 0 clr 0 scp 0 ev false len 0 case UNREADABLE strength 0 [] model false hash 3186e7f6f659cedc verify true
+  reason: The page could not be rendered or was too short to be a terms document (for example a login wall or an error page). Finding: INCONCLUSIVE.
+
+judging #13  https://x.com/en/tos CONTENT_OWNERSHIP
+  judge_check(13) try 1: ACCEPTED 28s tx 0xec03b016fe6345937acfea869c3e0fdef9e7353ed39cf6bb177b93bb04e67c36 → {"case":"STRONG","check_id":13,"clarity_bucket":6,"content_hash":"454d50e4220f1035","evidence_present":true,"findings_key":"RED_FLAG|sev6|clr6|scp6|ev1|len7|454d50e4220f1035","judged":true,"outcome":"RED_FLAG","scope_bucket":6,"severity_bucket":6,"status":"OK"}
+  #13: JUDGED RED_FLAG  sev 6 clr 6 scp 6 ev true len 7 case STRONG strength 6 [license,sublicense,royalty-free,worldwide,reproduce,grant us] model true hash 454d50e4220f1035 verify true
+  quote: "in choosing to submit, input, create, generate, post, or display content on or through the services, you grant us a worldwide, non-exclusive, royalty-free license (with the right to sublicense) to use, copy, reproduce, process, adapt, modif"
+  reason: 12 matching clauses, 6 distinct indicators (license, sublicense, royalty-free, worldwide, reproduce, grant us), 1 denial clause; strong evidence. Finding: RED FLAG - Broad license to your content.
+
+judging #14  https://x.com/en/tos MANDATORY_ARBITRATION
+  judge_check(14) try 1: ACCEPTED 28s tx 0x6a737a08b79fb2f4e11880b21121f1bce293449d4c49e06b0f6c98f682740478 → {"case":"STRONG","check_id":14,"clarity_bucket":7,"content_hash":"e4e9bc4c325c3f79","evidence_present":true,"findings_key":"RED_FLAG|sev7|clr7|scp6|ev1|len7|e4e9bc4c325c3f79","judged":true,"outcome":"RED_FLAG","scope_bucket":6,"severity_bucket":7,"status":"OK"}
+  #14: JUDGED RED_FLAG  sev 7 clr 7 scp 6 ev true len 7 case STRONG strength 5 [arbitration,waive,class action,individual basis,binding arbitration] model true hash e4e9bc4c325c3f79 verify true
+  quote: "the parties agree that any arbitration shall be conducted on an individual basis only, and not as a class, collective, or representative action."
+  reason: 16 matching clauses, 5 distinct indicators (arbitration, waive, class action, individual basis, binding arbitration); strong evidence. Finding: RED FLAG - Mandatory arbitration / class action waiver.
+
+judging #15  https://duckduckgo.com/terms DATA_SALE
+  judge_check(15) try 1: ACCEPTED 20s tx 0x59eaf5a9b9d879f2a0e1e483e69b0fba7ed1fd884814d140db8b64c973dbaf9a → {"case":"ABSENT","check_id":15,"clarity_bucket":0,"content_hash":"1274c3d7719044d9","evidence_present":false,"findings_key":"CLEAN|sev0|clr0|scp0|ev0|len3|1274c3d7719044d9","judged":true,"outcome":"CLEAN","scope_bucket":0,"severity_bucket":0,"status":"OK"}
+  #15: JUDGED CLEAN  sev 0 clr 0 scp 0 ev false len 3 case ABSENT strength 0 [] model false hash 1274c3d7719044d9 verify true
+  reason: The terms contain none of the indicators for 'Data sale or sharing'. Finding: CLEAN for Data sale or sharing.
+
+judging #16  https://duckduckgo.com/terms MANDATORY_ARBITRATION
+  judge_check(16) try 1: ACCEPTED 21s tx 0x8257b7cb496019e0c512ab8dc0267f77cdcc50b9f6938a43b19a6d8843a3c61c → {"case":"ABSENT","check_id":16,"clarity_bucket":0,"content_hash":"bf42b5dfa3395188","evidence_present":false,"findings_key":"CLEAN|sev0|clr0|scp0|ev0|len3|bf42b5dfa3395188","judged":true,"outcome":"CLEAN","scope_bucket":0,"severity_bucket":0,"status":"OK"}
+  #16: JUDGED CLEAN  sev 0 clr 0 scp 0 ev false len 3 case ABSENT strength 0 [] model false hash bf42b5dfa3395188 verify true
+  reason: The terms contain none of the indicators for 'Mandatory arbitration / class action waiver'. Finding: CLEAN for Mandatory arbitration / class action waiver.
+
+judging #17  https://discord.com/terms CONTENT_OWNERSHIP
+  judge_check(17) try 1: ACCEPTED 29s tx 0x710d5fd7fbe3e9417a2f2b2dd532b359b4bccb7d9792e9798b1943fbbf1063a3 → {"case":"STRONG","check_id":17,"clarity_bucket":6,"content_hash":"b0dcd18556375847","evidence_present":true,"findings_key":"RED_FLAG|sev6|clr6|scp5|ev1|len6|b0dcd18556375847","judged":true,"outcome":"RED_FLAG","scope_bucket":5,"severity_bucket":6,"status":"OK"}
+  #17: JUDGED RED_FLAG  sev 6 clr 6 scp 5 ev true len 6 case STRONG strength 7 [license,sublicense,royalty-free,worldwide,reproduce,derivative,grant us] model true hash b0dcd18556375847 verify true
+  quote: "this license is worldwide, non-exclusive (which means you can still license your content to others), royalty-free (which means there are no fees for this license), sublicensable, and transferable."
+  reason: 9 matching clauses, 7 distinct indicators (license, sublicense, royalty-free, worldwide, reproduce, derivative, grant us), 1 denial clause; strong evidence. Finding: RED FLAG - Broad license to your content.
+
+judging #18  https://discord.com/terms ACCOUNT_TERMINATION
+  judge_check(18) try 1: ACCEPTED 28s tx 0x2c7c8ec7cd93293332b3ca095ff7a69b7ea14550034f0f02316816f7bfc63718 → {"case":"MODERATE","check_id":18,"clarity_bucket":5,"content_hash":"52f349651b91a3e4","evidence_present":true,"findings_key":"RED_FLAG|sev5|clr5|scp5|ev1|len6|52f349651b91a3e4","judged":true,"outcome":"RED_FLAG","scope_bucket":5,"severity_bucket":5,"status":"OK"}
+  #18: JUDGED RED_FLAG  sev 5 clr 5 scp 5 ev true len 6 case MODERATE strength 4 [terminate,suspend,any reason,without notice] model true hash 52f349651b91a3e4 verify true
+  quote: "subject to applicable law, we reserve the right to suspend or terminate your account and/or your access to some or all of our services with or without notice, at our discretion for any reason, or for the following reasons:"
+  reason: 6 matching clauses, 4 distinct indicators (terminate, suspend, any reason, without notice), 2 denial clauses; moderate evidence, judged one-sided. Finding: RED FLAG - Termination for any reason.
